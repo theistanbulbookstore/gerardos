@@ -535,37 +535,47 @@
 
             if (!rawData || rawData.length === 0) return;
 
-            // Collect all distinct categories and subcategories
-            const categorySet = new Set();
+            // Helper to clean up category strings (remove Roman numerals & letters)
+            function cleanLabel(str) {
+                if (!str) return '';
+                return str
+                    .replace(/^[XVILCDM]+\.\s*/i, '') // Remove Roman numerals like XII. or XXVII.
+                    .replace(/^[A-Z]\.\s*/i, '')        // Remove section letters like A.
+                    .replace(/-/g, ' ')
+                    .trim();
+            }
+
+            const keywordPairs = new Map(); // Map: English Key -> { en, gr }
 
             rawData.forEach(item => {
-                // Main categories
-                if (item.main_category_english && item.main_category_english.trim().length > 2) {
-                    categorySet.add(item.main_category_english.trim());
-                }
-                if (item.category && item.category.trim().length > 2) {
-                    categorySet.add(item.category.trim());
+                // Check Main Category
+                const mainEn = cleanLabel(item.main_category_english);
+                const mainGr = item.category ? item.category.trim() : '';
+                if (mainEn && mainEn.length > 2 && mainEn.split(' ').length <= 3) {
+                    keywordPairs.set(mainEn, { en: mainEn, gr: mainGr });
                 }
 
-                // Subcategories
-                if (item.subcategory_english && item.subcategory_english.trim().length > 2) {
-                    categorySet.add(item.subcategory_english.trim());
-                }
-                if (item.subcategory && item.subcategory.trim().length > 2) {
-                    categorySet.add(item.subcategory.trim());
+                // Check Subcategory
+                const subEn = cleanLabel(item.subcategory_english);
+                const subGr = item.subcategory ? item.subcategory.trim() : '';
+                if (subEn && subEn.length > 2 && subEn.split(' ').length <= 3) {
+                    keywordPairs.set(subEn, { en: subEn, gr: subGr });
                 }
             });
 
-            const allCategories = Array.from(categorySet);
+            const pool = Array.from(keywordPairs.values());
 
-            // Pick 8 random distinct categories/subcategories
-            const shuffledTerms = allCategories.sort(() => 0.5 - Math.random()).slice(0, 8);
+            // Pick 8 random concise pairs
+            const selected = pool.sort(() => 0.5 - Math.random()).slice(0, 8);
 
-            // Render the dynamic chips
-            shuffledTerms.forEach(term => {
-                const safeTerm = term.replace(/'/g, "\\'");
+            // Render chips as: English (Greek) or just English if Greek is absent
+            selected.forEach(item => {
+                const searchText = item.gr || item.en;
+                const displayText = item.gr ? `${item.en} (${item.gr})` : item.en;
+                const safeSearch = searchText.replace(/'/g, "\\'");
+
                 chipsContainer.append(
-                    `<span class="chip dynamic-chip" onclick="applySearch('${safeTerm}')">${term}</span>`
+                    `<span class="chip dynamic-chip" onclick="applySearch('${safeSearch}')">${displayText}</span>`
                 );
             });
         }
