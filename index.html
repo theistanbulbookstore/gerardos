@@ -535,40 +535,44 @@
 
             if (!rawData || rawData.length === 0) return;
 
-            // Helper to clean up category strings (remove Roman numerals & letters)
+            // Helper to strip Roman numerals, Arabic numbers, Greek ordinal letters (e.g. Δ΄, ΚΓ΄), and prefixes
             function cleanLabel(str) {
                 if (!str) return '';
                 return str
-                    .replace(/^[XVILCDM]+\.\s*/i, '') // Remove Roman numerals like XII. or XXVII.
-                    .replace(/^[A-Z]\.\s*/i, '')        // Remove section letters like A.
-                    .replace(/-/g, ' ')
+                    .replace(/^[IVXLCDMivxlcdm0-9A-Zα-ωΑ-Ω\.\s\-\–\—\(\)΄\']*?\.\s*/i, '') // Strips "IV. ", "12. ", "Δ΄ "
+                    .replace(/^[Α-Ωα-ω0-9]+[΄\']?\s+/i, '')                             // Strips standalone Greek prefixes like "ΚΓ΄ "
+                    .replace(/^[0-9]+\s*[\-\)]\s*/, '')                                 // Strips "1 - ", "2) "
+                    .replace(/[\-\–\—]/g, ' ')                                           // Standardize dashes
+                    .replace(/\s+/g, ' ')                                               // Trim extra spaces
                     .trim();
             }
 
             const keywordPairs = new Map(); // Map: English Key -> { en, gr }
 
             rawData.forEach(item => {
-                // Check Main Category
-                const mainEn = cleanLabel(item.main_category_english);
-                const mainGr = item.category ? item.category.trim() : '';
-                if (mainEn && mainEn.length > 2 && mainEn.split(' ').length <= 3) {
-                    keywordPairs.set(mainEn, { en: mainEn, gr: mainGr });
-                }
+                const rawEn = item.main_category_english;
+                const rawGr = item.main_category;
 
-                // Check Subcategory
-                const subEn = cleanLabel(item.subcategory_english);
-                const subGr = item.subcategory ? item.subcategory.trim() : '';
-                if (subEn && subEn.length > 2 && subEn.split(' ').length <= 3) {
-                    keywordPairs.set(subEn, { en: subEn, gr: subGr });
+                if (rawEn && typeof rawEn === 'string') {
+                    const cleanEn = cleanLabel(rawEn);
+                    const cleanGr = cleanLabel(rawGr);
+
+                    // Keep terms that are concise (between 3 and 25 characters, max 3 words)
+                    const wordCount = cleanEn.split(' ').length;
+                    if (cleanEn.length >= 3 && cleanEn.length <= 25 && wordCount <= 3) {
+                        // Ensure Greek is not identical to English and is valid
+                        const validGr = (cleanGr && cleanGr.toLowerCase() !== cleanEn.toLowerCase()) ? cleanGr : '';
+                        keywordPairs.set(cleanEn, { en: cleanEn, gr: validGr });
+                    }
                 }
             });
 
             const pool = Array.from(keywordPairs.values());
 
-            // Pick 8 random concise pairs
+            // Shuffle and pick 8 random concise pairs
             const selected = pool.sort(() => 0.5 - Math.random()).slice(0, 8);
 
-            // Render chips as: English (Greek) or just English if Greek is absent
+            // Render chips as: English (Greek) or clean English
             selected.forEach(item => {
                 const searchText = item.gr || item.en;
                 const displayText = item.gr ? `${item.en} (${item.gr})` : item.en;
