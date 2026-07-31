@@ -440,11 +440,9 @@ $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
     let query = stripGreekAccents($('#customSearchInput').val());
     if (!query) return true;
     
-    let rowObj = settings.aoData[dataIndex]._aData;
-    if (!rowObj) return true;
-
-    let rowValues = Object.values(rowObj).map(val => stripGreekAccents(val)).join(' ');
-    return rowValues.includes(query);
+    // Concatenate all row data into one searchable string
+    let fullRowText = stripGreekAccents(data.join(' '));
+    return fullRowText.includes(query);
 });
 
 // Generate Keyword Suggestions Immediately On Page Load
@@ -492,7 +490,7 @@ function initDataTable(data) {
             { 
                 data: null, 
                 render: function(data) {
-                    return (data.price || '') + ' ' + (data.currency || '');
+                    return data.price_display || ((data.price || '') + ' ' + (data.currency || '')).trim() || '—';
                 } 
             },
             {
@@ -510,6 +508,7 @@ function initDataTable(data) {
         scrollX: true
     });
 
+    // Re-apply search query to current dataset
     let curSearch = $('#customSearchInput').val();
     if (curSearch) {
         dataTable.draw();
@@ -567,6 +566,7 @@ function applyBundlingToggle() {
         let group = grouped[key];
         let primary = Object.assign({}, group[0]);
         
+        // Collect all distinct catalog years present in this group
         let years = [...new Set(group.map(g => g.catalog_year))].sort();
         
         if (years.length > 1) {
