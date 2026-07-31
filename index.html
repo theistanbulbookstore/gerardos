@@ -3,221 +3,649 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Gerardos Catalogues Archive</title>
+    <title>The Gerardos Catalogues</title>
     
-    <!-- DataTables & jQuery Dependencies -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- Fira Code Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- DataTables & Chart.js CSS/JS Dependencies -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 20px;
-            background-color: #f8f9fa;
-            color: #333;
-        }
-        h1 { margin-bottom: 5px; }
-        .sub-header { color: #666; margin-bottom: 20px; }
-        
-        .controls-container {
-            background: #ffffff;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            justify-content: space-between;
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #111827;
+            --text-muted: #6b7280;
+            --accent-cyan: #0284c7;
+            --border-light: #e5e7eb;
+            --border-dark: #111827;
+            --font-mono: 'Fira Code', 'Consolas', monospace;
         }
 
-        .search-box {
-            font-size: 1rem;
-            padding: 8px 12px;
-            width: 300px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 30px;
+            font-size: 0.85rem;
+            letter-spacing: -0.2px;
+        }
+
+        .container {
+            display: flex;
+            gap: 40px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        /* Large Sidebar & Photo Scaling */
+        .sidebar {
+            flex: 0 0 380px;
+            background: transparent;
+            padding: 0;
+            height: fit-content;
+            position: sticky;
+            top: 30px;
+        }
+
+        .sidebar img {
+            width: 100%;
+            max-height: 80vh;
+            object-fit: cover;
+            border-radius: 2px;
+            border: 1px solid var(--border-light);
+            display: block;
+        }
+
+        .sidebar-caption {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 16px;
+            line-height: 1.6;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        header {
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border-dark);
+            padding-bottom: 12px;
+        }
+
+        h1 {
+            margin: 0 0 6px 0;
+            color: var(--text-color);
+            font-size: 1.6rem;
+            font-weight: 400;
+            letter-spacing: 0px;
+        }
+
+        .subtitle {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* Controls Panel & Dedicated Search Bar */
+        .controls-panel {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 24px;
+        }
+
+        .main-search-wrapper {
+            margin-bottom: 16px;
+        }
+
+        .main-search-input {
+            width: 100%;
+            max-width: 550px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            padding: 10px 14px;
+            border: 1px solid var(--border-dark);
+            border-radius: 2px;
+            outline: none;
+            background-color: #ffffff;
+            color: var(--text-color);
+        }
+
+        .main-search-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 1px var(--accent-cyan);
+        }
+
+        .search-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .chip {
+            background: transparent;
+            color: var(--text-color);
+            padding: 5px 12px;
+            border-radius: 2px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid var(--border-light);
+            font-family: var(--font-mono);
+        }
+
+        .chip:hover {
+            border-color: var(--border-dark);
+            color: var(--border-dark);
+        }
+
+        .shuffle-btn {
+            background: var(--border-dark);
+            color: #ffffff;
+            font-weight: 400;
+            border: 1px solid var(--border-dark);
+        }
+
+        .shuffle-btn:hover {
+            background: #374151;
+            color: #ffffff;
         }
 
         .toggle-container {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        /* Responsive Table Wrapper with Horizontal Scroll Hints */
-        .table-scroll-container {
-            position: relative;
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin-top: 10px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .scroll-hint-badge {
-            display: inline-block;
-            background-color: #e9ecef;
-            color: #495057;
+            gap: 10px;
             font-size: 0.8rem;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 12px;
-            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+
+        .chart-card {
+            background: transparent;
+            padding: 0;
+            height: 220px;
+        }
+
+        /* Table Scroll Hint & Responsive Wrapper */
+        .scroll-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .table-scroll-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--border-light);
+            border-radius: 2px;
+        }
+
+        /* DataTables Default Search Bar (Hidden in favor of custom input above) */
+        .dataTables_wrapper .dataTables_filter {
+            display: none !important;
         }
 
         table.dataTable {
             width: 100% !important;
-            margin: 0 !important;
-            white-space: nowrap; /* Keeps columns neat and prevents clipping */
+            border-collapse: collapse !important;
+            background: #ffffff !important;
+            color: var(--text-color) !important;
+            font-family: var(--font-mono) !important;
+            font-size: 0.8rem !important;
+            border: none !important;
+            white-space: nowrap;
         }
 
         table.dataTable thead th {
-            background-color: #f1f3f5;
-            color: #212529;
-            border-bottom: 2px solid #dee2e6;
+            background-color: #ffffff !important;
+            color: var(--text-color) !important;
+            border-bottom: 2px solid var(--border-dark) !important;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            padding: 10px !important;
+            font-weight: 600;
         }
 
-        /* Sticky Left Column for Context */
-        table.dataTable tbody td:first-child,
-        table.dataTable thead th:first-child {
-            position: sticky;
-            left: 0;
-            background-color: #ffffff;
-            z-index: 1;
-            border-right: 2px solid #e0e0e0;
+        table.dataTable tbody td {
+            border-bottom: 1px solid var(--border-light) !important;
+            padding: 10px !important;
+            background-color: #ffffff !important;
+            color: var(--text-color) !important;
         }
-        table.dataTable thead th:first-child {
-            background-color: #f1f3f5;
-            z-index: 2;
+
+        table.dataTable tbody tr:hover td {
+            background-color: #f9fafb !important;
+        }
+
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            color: var(--text-muted) !important;
+            font-family: var(--font-mono) !important;
+            font-size: 0.75rem !important;
+            margin-top: 12px;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            color: var(--text-color) !important;
+            border-radius: 2px !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--border-dark) !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+
+        .dt-button {
+            background: #ffffff !important;
+            color: var(--text-color) !important;
+            border: 1px solid var(--border-light) !important;
+            font-family: var(--font-mono) !important;
+            font-size: 0.75rem !important;
+            border-radius: 2px !important;
+            padding: 5px 10px !important;
+            margin-bottom: 10px !important;
+        }
+
+        .dt-button:hover {
+            border-color: var(--border-dark) !important;
+            color: var(--border-dark) !important;
+        }
+
+        .btn-view-scan {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-light);
+            padding: 2px 8px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            transition: all 0.15s ease;
+        }
+
+        .btn-view-scan:hover {
+            border-color: var(--border-dark);
+            background-color: var(--border-dark);
+            color: #ffffff;
+        }
+
+        /* Lightbox Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255,255,255,0.95);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 2px;
+            border: 1px solid var(--border-dark);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px; right: 35px;
+            color: var(--text-color);
+            font-size: 28px;
+            cursor: pointer;
+            font-family: var(--font-mono);
         }
     </style>
 </head>
 <body>
 
-    <h1>The Gerardos Catalogues</h1>
-    <div class="sub-header">Interactive Historical Archive Search</div>
-
-    <div class="controls-container">
-        <div>
-            <input type="text" id="customSearch" class="search-box" placeholder="Search author, title, year, keyword...">
+<div class="container">
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+        <img id="bookstore-img" src="bookstore.jpg" alt="Gerardo's Bookstore" onerror="tryNextImage(this)">
+        <div class="sidebar-caption">
+            Archive ID: Εν Κωνσταντινουπόλει Βιβλιοπωλείον Α. Κ. Γέραρδου και Σας<br>
+            Period: 1895 &amp; 1904<br>
+            Status: Indexed (2,578 records)
         </div>
-        <label class="toggle-container">
-            <input type="checkbox" id="matchToggle" checked>
-            <span>Group Exact Matches</span>
-        </label>
     </div>
 
-    <div class="scroll-hint-badge">↔ Scroll table horizontally to view full metadata</div>
+    <!-- MAIN RIGHT CONTENT AREA -->
+    <div class="main-content">
+        <header>
+            <h1 id="main-title">The Gerardos Catalogues</h1>
+            <p class="subtitle" id="main-subtitle">Digital Repository: A Late Ottoman Bookstore</p>
+        </header>
 
-    <!-- Table Container -->
-    <div class="table-scroll-container">
-        <table id="catalogTable" class="display cell-border" style="width:100%">
-            <thead>
-                <tr id="tableHeader"></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <!-- CONTROLS & SEARCH -->
+        <div class="controls-panel">
+            <!-- ALWAYS VISIBLE MAIN SEARCH BAR -->
+            <div class="main-search-wrapper">
+                <input type="text" id="customSearchInput" class="main-search-input" placeholder="Search catalog (e.g. Sophocles, Θεολογία, Primer)..." oninput="onCustomSearch(this.value)">
+            </div>
+
+            <!-- AUTOMATIC KEYWORD PRESETS -->
+            <div class="search-chips" id="chips-container">
+                <span class="chip shuffle-btn" onclick="generateDynamicChips()">🎲 Suggest Keywords</span>
+            </div>
+
+            <div class="toggle-container">
+                <input type="checkbox" id="toggle-bundling" onchange="applyBundlingToggle()">
+                <label for="toggle-bundling">Group Exact Matches (ON: Combine 1895 &amp; 1904 duplicate titles | OFF: Show full raw catalog)</label>
+            </div>
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <canvas id="categoryChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="yearChart"></canvas>
+            </div>
+        </div>
+
+        <span class="scroll-hint">↔ Scroll table horizontally to view full metadata</span>
+
+        <!-- DATA TABLE WRAPPER -->
+        <div class="table-scroll-wrapper">
+            <table id="catalogTable" class="display nowrap">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>YEAR</th>
+                        <th>AUTHOR (GR)</th>
+                        <th>AUTHOR (EN)</th>
+                        <th>TITLE (GR)</th>
+                        <th>TITLE (EN)</th>
+                        <th>CATEGORY</th>
+                        <th>PRICE</th>
+                        <th>SCAN</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
+</div>
 
-    <script>
-        let rawData = [];
-        let dataTableInstance = null;
+<!-- LIGHTBOX MODAL -->
+<div id="imageModal" class="modal" onclick="closeModal()">
+    <span class="modal-close">[X]</span>
+    <img class="modal-content" id="modalImage">
+</div>
 
-        // Accent & Diacritic Stripper for Greek & English Search
-        function normalizeText(text) {
-            if (!text) return "";
-            return text.toString()
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, ""); // Strips accents (e.g., Σοφοκλῆς -> σοφοκλης)
+<script>
+let rawData = [];
+let dataTable = null;
+let categoryChartInstance = null;
+let yearChartInstance = null;
+
+const imageCandidates = ['bookstore.png', 'bookstore.jpeg', 'store.jpg', 'store.png', 'https://via.placeholder.com/380x500/ffffff/6b7280?text=BOOKSTORE+PHOTO'];
+let imgCandidateIdx = 0;
+function tryNextImage(imgEl) {
+    if (imgCandidateIdx < imageCandidates.length) {
+        imgEl.src = imageCandidates[imgCandidateIdx++];
+    }
+}
+
+const bilingualTerms = [
+    { en: "Kindergarten", gr: "ΝΗΠΙΑΓΩΓΕΙΑ" },
+    { en: "Primers", gr: "᾿Αλφαβητάριον" },
+    { en: "Literature", gr: "ΦΙΛΟΛΟΓΙΚΑ" },
+    { en: "Theology", gr: "ΘΕΟΛΟΓΙΑ" },
+    { en: "History", gr: "ΙΣΤΟΡΙΑ" },
+    { en: "Law", gr: "ΝΟΜΙΚΑ" }
+];
+
+function stripGreekAccents(str) {
+    if (!str) return '';
+    return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+// Universal Greek/English Diacritic Insensitive Search across ALL columns
+$.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+    let query = stripGreekAccents($('#customSearchInput').val());
+    if (!query) return true;
+    
+    // Concatenate all row data into one searchable string
+    let fullRowText = stripGreekAccents(data.join(' '));
+    return fullRowText.includes(query);
+});
+
+// Generate Keyword Suggestions Immediately On Page Load
+$(document).ready(function() {
+    generateDynamicChips();
+});
+
+$(document.body).ready(function() {
+    Papa.parse("master_catalogs_combined.csv", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            rawData = results.data;
+            initDataTable(rawData);
+            initCharts(rawData);
+            generateDynamicChips();
         }
+    });
+});
 
-        // Custom Universal DataTables Search Plugin
-        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            const query = normalizeText($('#customSearch').val());
-            if (!query) return true;
+function initDataTable(data) {
+    if (dataTable) {
+        dataTable.destroy();
+        $('#catalogTable tbody').empty();
+    }
 
-            // Concatenate all row values into one searchable normalized string
-            const rowCombined = normalizeText(data.join(" "));
-            return rowCombined.includes(query);
-        });
-
-        // Load CSV Data
-        $(document).ready(function() {
-            Papa.parse("master_catalogs_combined.csv", {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    rawData = results.data;
-                    renderTable();
+    dataTable = $('#catalogTable').DataTable({
+        data: data,
+        dom: 'Brtip',
+        buttons: ['csvHtml5', 'excelHtml5'],
+        columns: [
+            {
+                className: 'dt-control',
+                orderable: false,
+                data: null,
+                defaultContent: ''
+            },
+            { data: 'catalog_year' },
+            { data: 'author', defaultContent: '' },
+            { data: 'author_transcribed', defaultContent: '' },
+            { data: 'title', defaultContent: '' },
+            { data: 'title_english', defaultContent: '' },
+            { data: 'main_category_english', defaultContent: '' },
+            { 
+                data: null, 
+                render: function(data) {
+                    return (data.price || '') + ' ' + (data.currency || '');
+                } 
+            },
+            {
+                data: null,
+                render: function(data) {
+                    if (!data.source_file) return '';
+                    let subfolder = data.catalog_year == '1895' ? 'images_1895' : 'images_1904';
+                    let path = `${subfolder}/${data.source_file}`;
+                    return `<button class="btn-view-scan" onclick="openModal('${path}')">Scan</button>`;
                 }
-            });
-
-            // Live Search Trigger
-            $('#customSearch').on('keyup input', function() {
-                if (dataTableInstance) {
-                    dataTableInstance.draw();
-                }
-            });
-
-            // Toggle Handler
-            $('#matchToggle').on('change', function() {
-                renderTable();
-            });
-        });
-
-        function renderTable() {
-            if (rawData.length === 0) return;
-
-            const isGrouped = $('#matchToggle').is(':checked');
-            
-            // Destroy existing table instance before re-rendering
-            if (dataTableInstance) {
-                dataTableInstance.destroy();
-                $('#catalogTable tbody').empty();
-                $('#tableHeader').empty();
             }
+        ],
+        order: [[1, 'asc']],
+        pageLength: 25,
+        scrollX: true
+    });
 
-            const headers = Object.keys(rawData[0]);
-            
-            // Build Dynamic Headers
-            headers.forEach(h => {
-                $('#tableHeader').append(`<th>${h}</th>`);
-            });
+    // Re-apply search query to current dataset
+    let curSearch = $('#customSearchInput').val();
+    if (curSearch) {
+        dataTable.draw();
+    }
 
-            // Process Rows
-            let displayData = rawData;
-            
-            // Render Table Rows
-            const tbody = $('#catalogTable tbody');
-            displayData.forEach(row => {
-                let tr = $('<tr></tr>');
-                headers.forEach(h => {
-                    tr.append(`<td>${row[h] || ''}</td>`);
-                });
-                tbody.append(tr);
-            });
+    dataTable.on('draw', function() {
+        let filteredData = dataTable.rows({ filter: 'applied' }).data().toArray();
+        updateCharts(filteredData);
+    });
+}
 
-            // Initialize DataTables
-            dataTableInstance = $('#catalogTable').DataTable({
-                paging: true,
-                pageLength: 25,
-                dom: 'rtip', // Hide default search box in favor of custom search box
-                scrollX: true, // Enables full touch & mouse horizontal scroll
-                autoWidth: false
-            });
+function generateDynamicChips() {
+    const chipsContainer = $('#chips-container');
+    $('.dynamic-chip').remove();
 
-            // Re-apply search filter
-            dataTableInstance.draw();
+    let shuffled = [...bilingualTerms].sort(() => 0.5 - Math.random()).slice(0, 4);
+    
+    shuffled.forEach(item => {
+        chipsContainer.append(
+            `<span class="chip dynamic-chip" onclick="applySearch('${item.gr}')">${item.en} (${item.gr})</span>`
+        );
+    });
+}
+
+function onCustomSearch(val) {
+    if (dataTable) {
+        dataTable.draw();
+    }
+}
+
+function applySearch(term) {
+    $('#customSearchInput').val(term);
+    if (dataTable) {
+        dataTable.draw();
+    }
+}
+
+function applyBundlingToggle() {
+    let isBundled = $('#toggle-bundling').is(':checked');
+    
+    if (!isBundled) {
+        initDataTable(rawData);
+        return;
+    }
+
+    let grouped = {};
+    rawData.forEach(item => {
+        let key = stripGreekAccents((item.author || '') + '|' + (item.title || ''));
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(item);
+    });
+
+    let bundledRows = [];
+    Object.keys(grouped).forEach(key => {
+        let group = grouped[key];
+        let primary = Object.assign({}, group[0]);
+        if (group.length > 1) {
+            primary.catalog_year = '1895 & 1904 [Bundled]';
         }
-    </script>
+        bundledRows.push(primary);
+    });
+
+    initDataTable(bundledRows);
+}
+
+function initCharts(data) {
+    const ctxCat = document.getElementById('categoryChart').getContext('2d');
+    const ctxYear = document.getElementById('yearChart').getContext('2d');
+
+    Chart.defaults.color = '#6b7280';
+    Chart.defaults.font.family = "'Fira Code', monospace";
+
+    categoryChartInstance = new Chart(ctxCat, {
+        type: 'doughnut',
+        data: getCategoryChartData(data),
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Category Distribution', color: '#111827' } } }
+    });
+
+    yearChartInstance = new Chart(ctxYear, {
+        type: 'bar',
+        data: getYearChartData(data),
+        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Catalog Volume by Year', color: '#111827' } } }
+    });
+}
+
+function updateCharts(data) {
+    if (!categoryChartInstance || !yearChartInstance) return;
+    
+    let catData = getCategoryChartData(data);
+    categoryChartInstance.data = catData;
+    categoryChartInstance.update();
+
+    let yrData = getYearChartData(data);
+    yearChartInstance.data = yrData;
+    yearChartInstance.update();
+}
+
+function getCategoryChartData(data) {
+    let counts = {};
+    data.forEach(d => {
+        let cat = d.main_category_english || 'Other';
+        counts[cat] = (counts[cat] || 0) + 1;
+    });
+    return {
+        labels: Object.keys(counts).slice(0, 7),
+        datasets: [{
+            data: Object.values(counts).slice(0, 7),
+            backgroundColor: ['#111827', '#059669', '#0284c7', '#d97706', '#7c3aed', '#dc2626', '#4b5563']
+        }]
+    };
+}
+
+function getYearChartData(data) {
+    let counts = { '1895': 0, '1904': 0 };
+    data.forEach(d => {
+        if (d.catalog_year && counts.hasOwnProperty(d.catalog_year)) {
+            counts[d.catalog_year]++;
+        }
+    });
+    return {
+        labels: Object.keys(counts),
+        datasets: [{
+            label: 'Count',
+            data: Object.values(counts),
+            backgroundColor: ['#111827', '#059669']
+        }]
+    };
+}
+
+function openModal(imgSrc) {
+    document.getElementById('modalImage').src = imgSrc;
+    document.getElementById('imageModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+</script>
 </body>
 </html>
