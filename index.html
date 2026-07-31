@@ -499,7 +499,39 @@
                     {
                         data: null,
                         render: function (data) {
-                            return data.price_display || ((data.price || '') + ' ' + (data.currency || '')).trim() || '—';
+                            if (!data.price && !data.price_display) return '—';
+
+                            // 1. If price_display already has clean "γρ." and "παρ." formatted, use it directly
+                            let display = (data.price_display || '').toString().trim();
+                            if (display.includes('γρ') && display.includes('παρ')) {
+                                return display;
+                            }
+
+                            // 2. Otherwise, clean raw price string and strip hallucinated drachmas
+                            let raw = (data.price || display)
+                                .toString()
+                                .replace(/\s*(?:Δρχ|Δρ|drachmas|Δραχμαί|δρχ|₯)[\.\s]*/gi, '')
+                                .trim();
+
+                            if (!raw || raw === '—') return '—';
+
+                            // 3. Handle decimal prices like "1.20" -> "1 γρ. 20 παρ."
+                            if (raw.includes('.')) {
+                                let parts = raw.split('.');
+                                let grosia = parts[0].trim();
+                                let paras = parts[1].trim();
+
+                                if (paras.length === 1) paras += '0';
+
+                                return `${grosia} γρ. ${paras} παρ.`;
+                            }
+
+                            // 4. Handle pure paras vs grosia
+                            if (data.currency && data.currency.includes('παρ')) {
+                                return `${raw} παρ.`;
+                            }
+
+                            return `${raw} γρ.`;
                         }
                     },
                     {
@@ -664,11 +696,34 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 25 // Adds spacing so title never overlaps the legend
+                        }
+                    },
                     plugins: {
-                        title: { display: true, text: 'Category Distribution', color: '#111827' },
+                        title: { 
+                            display: true, 
+                            text: 'Category Distribution', 
+                            color: '#111827',
+                            padding: { bottom: 15 }
+                        },
                         legend: {
                             position: 'right',
-                            labels: { boxWidth: 10, padding: 6, font: { size: 10 } }
+                            labels: { 
+                                boxWidth: 10, 
+                                padding: 5, 
+                                font: { size: 9 },
+                                generateLabels: function(chart) {
+                                    const original = Chart.overrides.doughnut.plugins.legend.labels.generateLabels(chart);
+                                    return original.map(label => {
+                                        if (label.text.length > 28) {
+                                            label.text = label.text.substring(0, 26) + '...';
+                                        }
+                                        return label;
+                                    });
+                                }
+                            }
                         },
                         tooltip: {
                             callbacks: {
@@ -690,6 +745,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: { top: 25 }
+                    },
                     plugins: { title: { display: true, text: 'Catalog Volume by Year', color: '#111827' } }
                 }
             });
@@ -708,41 +766,105 @@
         function getCategoryChartData(data) {
             let counts = {};
 
-            // Count clean category names
             data.forEach(d => {
                 let cat = d.main_category_english || 'Uncategorized';
-                // Strip index prefixes (e.g. "IV. ", "12. ") for clean aggregation
-                cat = cat.replace(/^(?:[IVXLCDMivxlcdm0-9]+)\b[\.\s]*/i, '').trim() || 'Uncategorized';
+
+                // 1. Strip index numbers and Roman numerals
+                cat = cat.replace(/^(?:[IVXLCDMivxlcdm0-9]+)\b[\.\s\-\–\—\)]*/i, '').trim();
+
+                // 2. Comprehensive normalization/grouping of related categories
+                const lower = cat.toLowerCase();
+                if (lower.includes('novel') || lower.includes('short stor')) {
+                    cat = 'Novels & Short Stories';
+                } else if (lower.includes('theater') || lower.includes('theatre')) {
+                    cat = 'Theater';
+                } else if (lower.includes('greek author') || lower.includes('classical greek')) {
+                    cat = 'Greek Authors & Classics';
+                } else if (lower.includes('latin author') || lower.includes('latin books')) {
+                    cat = 'Latin Authors';
+                } else if (lower.includes('text') || lower.includes('scholia') || lower.includes('interpretation')) {
+                    cat = 'Classical Texts & Scholia';
+                } else if (lower.includes('kindergarten') || lower.includes('primary school') || lower.includes('urban school') || lower.includes('elementary')) {
+                    cat = 'Primary Education';
+                } else if (lower.includes('hellenic school') || lower.includes('gymnasium') || lower.includes('secondary education') || lower.includes('normal school')) {
+                    cat = 'Secondary Education';
+                } else if (lower.includes('french')) {
+                    cat = 'French Language & Literature';
+                } else if (lower.includes('turkish')) {
+                    cat = 'Turkish Language & Books';
+                } else if (lower.includes('german') || lower.includes('italian') || lower.includes('russian') || lower.includes('spanish') || lower.includes('foreign language')) {
+                    cat = 'Other Foreign Languages';
+                } else if (lower.includes('dictionary') || lower.includes('dictionaries')) {
+                    cat = 'Dictionaries';
+                } else if (lower.includes('religion') || lower.includes('religious') || lower.includes('ecclesiastical') || lower.includes('church') || lower.includes('gospel') || lower.includes('hymn')) {
+                    cat = 'Religion & Ecclesiastical';
+                } else if (lower.includes('history') || lower.includes('historical') || lower.includes('archaeolog')) {
+                    cat = 'History & Archaeology';
+                } else if (lower.includes('poem') || lower.includes('poetry')) {
+                    cat = 'Poetry';
+                } else if (lower.includes('legal') || lower.includes('political') || lower.includes('law')) {
+                    cat = 'Law & Politics';
+                } else if (lower.includes('pedagog')) {
+                    cat = 'Pedagogy & Education';
+                } else if (lower.includes('gift') || lower.includes('award') || lower.includes('prize')) {
+                    cat = 'Gifts & Awards';
+                } else if (lower.includes('medical') || lower.includes('medicine')) {
+                    cat = 'Medicine & Health';
+                } else if (lower.includes('geograph') || lower.includes('atlas') || lower.includes('map')) {
+                    cat = 'Geography & Maps';
+                } else if (lower.includes('mathematic') || lower.includes('arithmetic') || lower.includes('geometry')) {
+                    cat = 'Mathematics';
+                } else if (lower.includes('commercial') || lower.includes('commerce') || lower.includes('bookkeeping')) {
+                    cat = 'Commerce & Accounting';
+                } else if (lower.includes('philosoph')) {
+                    cat = 'Philosophy';
+                } else if (lower.includes('music')) {
+                    cat = 'Music';
+                } else if (lower.includes('natural history') || lower.includes('physiognomy') || lower.includes('physics') || lower.includes('chemistry') || lower.includes('natural science')) {
+                    cat = 'Sciences (Physics/Chemistry)';
+                } else if (lower.includes('school equipment') || lower.includes('printed form') || lower.includes('instrument') || lower.includes('school form')) {
+                    cat = 'School Equipment & Materials';
+                } else if (lower.includes('maraslis')) {
+                    cat = 'Maraslis Library';
+                } else if (lower.includes('useful book')) {
+                    cat = 'Useful Books Society';
+                } else if (lower.includes('philolog')) {
+                    cat = 'Philology & Literature';
+                }
+
+                if (!cat) cat = 'Uncategorized';
                 counts[cat] = (counts[cat] || 0) + 1;
             });
 
-            // Sort highest to lowest
             let sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
 
-            // Pick Top 12 categories
-            let topLimit = 12;
+            // Dynamically take the Top 22 calculated categories
+            let topLimit = 22;
             let topCategories = sorted.slice(0, topLimit);
             let rest = sorted.slice(topLimit);
 
             let labels = topCategories.map(item => item[0]);
             let values = topCategories.map(item => item[1]);
 
-            // Combine remaining items into "Other Categories"
             if (rest.length > 0) {
                 let otherSum = rest.reduce((sum, item) => sum + item[1], 0);
                 labels.push('Other Categories');
                 values.push(otherSum);
             }
 
+            const colors = [
+                '#0f172a', '#1e293b', '#334155', '#475569', '#64748b',
+                '#0284c7', '#0369a1', '#075985', '#0c4a6e', '#38bdf8',
+                '#059669', '#047857', '#065f46', '#10b981', '#34d399',
+                '#d97706', '#b45309', '#78350f', '#f59e0b', '#7c3aed',
+                '#5b21b6', '#dc2626', '#9ca3af'
+            ];
+
             return {
                 labels: labels,
                 datasets: [{
                     data: values,
-                    backgroundColor: [
-                        '#111827', '#1e293b', '#334155', '#475569', '#64748b',
-                        '#059669', '#10b981', '#0284c7', '#38bdf8', '#d97706',
-                        '#7c3aed', '#dc2626', '#9ca3af'
-                    ],
+                    backgroundColor: colors.slice(0, labels.length),
                     borderWidth: 1,
                     borderColor: '#ffffff'
                 }]
