@@ -1145,128 +1145,128 @@ function generateDynamicChips() {
     </script>
     <!-- Your other scripts or page content can go here -->
 
-    <!-- PASTE THE JAVASCRIPT CODE RIGHT HERE -->
+    <!-- TAB ACCORDION & TAXONOMY LOADER -->
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-  // Helper: Strip prefix noise (numbers, Roman numerals, A'/B' marks) & Title Case
-  function cleanGenreName(str) {
-    if (!str) return '';
-    let cleaned = str.trim();
+        // Helper: Strip prefix noise & Title Case
+        function cleanGenreName(str) {
+            if (!str) return '';
+            let cleaned = str.trim();
 
-    // 1. Remove Roman numerals followed by dot/space (e.g. "XII. ", "IV. ")
-    cleaned = cleaned.replace(/^(?:[IVXLCDMivxlcdm]+)\b[\.\s\-\–\—]*/, '');
+            // 1. Remove Roman numerals followed by dot/space
+            cleaned = cleaned.replace(/^(?:[IVXLCDMivxlcdm]+)\b[\.\s\-\–\—]*/, '');
 
-    // 2. Remove Arabic numbers followed by dot/space/dash/ordinal (e.g. "10. ", "15th ")
-    cleaned = cleaned.replace(/^[0-9]+(?:th|st|nd|rd)?\b[\.\s\-\–\—)]*/i, '');
+            // 2. Remove Arabic numbers
+            cleaned = cleaned.replace(/^[0-9]+(?:th|st|nd|rd)?\b[\.\s\-\–\—)]*/i, '');
 
-    // 3. Remove Greek section prefix marks (e.g. "A' ", "B' ", "Δ΄ ")
-    cleaned = cleaned.replace(/^[Α-Ωα-ωA-Za-z][΄\']?\s+/, '');
+            // 3. Remove Greek section prefix marks
+            cleaned = cleaned.replace(/^[Α-Ωα-ωA-Za-z][΄\']?\s+/, '');
 
-    // 4. Clean leading punctuation
-    cleaned = cleaned.replace(/^[\.\,\-\–\—\(\)\s]+/, '').trim();
+            // 4. Clean leading punctuation
+            cleaned = cleaned.replace(/^[\.\,\-\–\—\(\)\s]+/, '').trim();
 
-    // Convert ALL CAPS text to Title Case (e.g., "MUSIC" -> "Music")
-    if (cleaned === cleaned.toUpperCase()) {
-      cleaned = cleaned.toLowerCase().replace(/(?:^|\s|\/|\()\S/g, a => a.toUpperCase());
-    }
-
-    return cleaned;
-  }
-
-fetch('genres_taxonomy.json')
-    .then(response => response.json())
-    .then(data => {
-        const grid = document.getElementById('categoryGrid');
-        const chipsContainer = document.getElementById('topCategoryChips');
-        if (!grid) return;
-
-        grid.innerHTML = '';
-        if (chipsContainer) chipsContainer.innerHTML = '';
-
-        for (const [rawCategoryName, catData] of Object.entries(data)) {
-            const categoryName = cleanGenreName(rawCategoryName);
-            const groupId = 'genre-group-' + categoryName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-
-            // Quick-Access Chip
-            if (chipsContainer) {
-                const chip = document.createElement('span');
-                chip.className = 'chip';
-                chip.innerHTML = `${categoryName} (${catData.total_count})`;
-                chip.onclick = function () {
-                    const targetGroup = document.getElementById(groupId);
-                    if (targetGroup) {
-                        targetGroup.setAttribute('open', 'true');
-                        targetGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                };
-                chipsContainer.appendChild(chip);
+            if (cleaned === cleaned.toUpperCase()) {
+                cleaned = cleaned.toLowerCase().replace(/(?:^|\s|\/|\()\S/g, a => a.toUpperCase());
             }
 
-            // Accordion Group
-            const details = document.createElement('details');
-            details.className = 'genre-group';
-            details.id = groupId;
-
-            const summary = document.createElement('summary');
-            summary.className = 'genre-summary';
-            summary.innerHTML = `<span>▶ ${categoryName}</span> <span class="genre-badge">${catData.total_count} items</span>`;
-            details.appendChild(summary);
-
-            const subGrid = document.createElement('div');
-            subGrid.className = 'subcat-container';
-
-            catData.subcategories.forEach(sub => {
-                const subDisplayName = cleanGenreName(sub.name);
-
-                let rawSearchTerm = sub.name;
-                if (sub.name.toLowerCase().includes('general / uncategorized')) {
-                    rawSearchTerm = '__UNCATEGORIZED__:' + rawCategoryName;
-                }
-
-                const subLink = document.createElement('a');
-                subLink.className = 'subcat-link';
-                subLink.onclick = function () {
-                    const homepageBtn = document.querySelectorAll('.nav-tab-btn')[0];
-                    switchTab('homepage-tab', homepageBtn);
-                    applySearch(rawSearchTerm);
-                };
-                subLink.innerHTML = `<span>${subDisplayName}</span> <span class="subcat-count">(${sub.count})</span>`;
-                subGrid.appendChild(subLink);
-            });
-
-            details.appendChild(subGrid);
-            grid.appendChild(details);
+            return cleaned;
         }
-    })
-    .catch(error => console.error('Error loading genres taxonomy:', error));
 
-function filterGenreGrid(query) {
-  const searchTerm = query.toLowerCase().trim();
-  const groups = document.querySelectorAll('.genre-group');
+        fetch('genres_taxonomy.json')
+            .then(response => response.json())
+            .then(data => {
+                const grid = document.getElementById('categoryGrid');
+                const chipsContainer = document.getElementById('topCategoryChips');
+                if (!grid) return;
 
-  groups.forEach(group => {
-    const links = group.querySelectorAll('.subcat-link');
-    let hasMatch = false;
+                grid.innerHTML = '';
+                if (chipsContainer) chipsContainer.innerHTML = '';
 
-    links.forEach(link => {
-      const text = link.textContent.toLowerCase();
-      if (text.includes(searchTerm)) {
-        link.style.display = 'flex';
-        hasMatch = true;
-      } else {
-        link.style.display = 'none';
-      }
+                for (const [rawCategoryName, catData] of Object.entries(data)) {
+                    const categoryName = cleanGenreName(rawCategoryName);
+                    const groupId = 'genre-group-' + categoryName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+                    // Quick-Access Chip
+                    if (chipsContainer) {
+                        const chip = document.createElement('span');
+                        chip.className = 'chip';
+                        chip.innerHTML = `${categoryName} (${catData.total_count})`;
+                        chip.onclick = function () {
+                            const targetGroup = document.getElementById(groupId);
+                            if (targetGroup) {
+                                targetGroup.setAttribute('open', 'true');
+                                targetGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        };
+                        chipsContainer.appendChild(chip);
+                    }
+
+                    // Accordion Group
+                    const details = document.createElement('details');
+                    details.className = 'genre-group';
+                    details.id = groupId;
+
+                    const summary = document.createElement('summary');
+                    summary.className = 'genre-summary';
+                    summary.innerHTML = `<span>▶ ${categoryName}</span> <span class="genre-badge">${catData.total_count} items</span>`;
+                    details.appendChild(summary);
+
+                    const subGrid = document.createElement('div');
+                    subGrid.className = 'subcat-container';
+
+                    catData.subcategories.forEach(sub => {
+                        const subDisplayName = cleanGenreName(sub.name);
+
+                        let rawSearchTerm = sub.name;
+                        if (sub.name.toLowerCase().includes('general / uncategorized')) {
+                            rawSearchTerm = '__UNCATEGORIZED__:' + rawCategoryName;
+                        }
+
+                        const subLink = document.createElement('a');
+                        subLink.className = 'subcat-link';
+                        subLink.onclick = function () {
+                            const homepageBtn = document.querySelectorAll('.nav-tab-btn')[0];
+                            switchTab('homepage-tab', homepageBtn);
+                            applySearch(rawSearchTerm);
+                        };
+                        subLink.innerHTML = `<span>${subDisplayName}</span> <span class="subcat-count">(${sub.count})</span>`;
+                        subGrid.appendChild(subLink);
+                    });
+
+                    details.appendChild(subGrid);
+                    grid.appendChild(details);
+                } // <--- Added closing brace for loop here!
+            })
+            .catch(error => console.error('Error loading genres taxonomy:', error));
     });
 
-    const summaryText = group.querySelector('summary').textContent.toLowerCase();
-    if (hasMatch || summaryText.includes(searchTerm)) {
-      group.style.display = 'block';
-      if (searchTerm.length > 0) group.setAttribute('open', 'true');
-    } else {
-      group.style.display = 'none';
+    function filterGenreGrid(query) {
+        const searchTerm = query.toLowerCase().trim();
+        const groups = document.querySelectorAll('.genre-group');
+
+        groups.forEach(group => {
+            const links = group.querySelectorAll('.subcat-link');
+            let hasMatch = false;
+
+            links.forEach(link => {
+                const text = link.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    link.style.display = 'flex';
+                    hasMatch = true;
+                } else {
+                    link.style.display = 'none';
+                }
+            });
+
+            const summaryText = group.querySelector('summary').textContent.toLowerCase();
+            if (hasMatch || summaryText.includes(searchTerm)) {
+                group.style.display = 'block';
+                if (searchTerm.length > 0) group.setAttribute('open', 'true');
+            } else {
+                group.style.display = 'none';
+            }
+        });
     }
-  });
-}
     </script>
 </body>
 
