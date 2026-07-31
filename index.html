@@ -582,6 +582,29 @@
         let categoryChartInstance = null;
         let yearChartInstance = null;
 
+        function switchTab(tabId, btnElement) {
+            // 1. Hide all tab content sections
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // 2. Remove the active style from all nav buttons
+            document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // 3. Show the requested tab
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+
+            // 4. Highlight the active button
+            if (btnElement) {
+                btnElement.classList.add('active');
+            }
+        }
+
         const imageCandidates = ['bookstore.png', 'bookstore.jpeg', 'store.jpg', 'store.png', 'https://via.placeholder.com/380x500/ffffff/6b7280?text=BOOKSTORE+PHOTO'];
         let imgCandidateIdx = 0;
         function tryNextImage(imgEl) {

@@ -1,0 +1,116 @@
+main_category_english,total_books,mean_price_grosia,median_price_grosia,min_price_grosia,max_price_grosia
+Miscellaneous Subjects,20,175.75,115.0,20.0,600.0
+Various Subjects,24,140.125,95.0,15.0,600.0
+Educational and School Instruments,12,89.83333333333333,62.5,14.0,175.0
+E' Miscellaneous School Equipment,13,80.07692307692308,50.0,3.0,250.0
+Atlases and Geographical Maps,19,68.34210526315789,50.0,2.0,125.0
+Dictionaries,133,57.11654135338346,40.0,2.0,1200.0
+Greek,21,49.80952380952381,30.0,5.0,200.0
+Turkish Books,22,47.54545454545455,28.5,5.0,125.0
+Latin Books,9,44.0,43.0,20.0,68.0
+Italian,5,41.2,36.0,25.0,70.0
+Geographical Maps,19,40.94736842105263,4.0,1.0,240.0
+Church Music,29,35.44827586206897,25.0,5.0,120.0
+11. MUSIC,16,33.125,27.5,5.0,80.0
+"Legal, Political",91,32.05494505494506,20.0,1.0,150.0
+Maraslis Library,70,31.02857142857143,27.0,6.0,120.0
+Theological and Religious,11,30.454545454545453,10.0,2.0,90.0
+10. Ecclesiastical,14,30.142857142857142,21.5,1.0,80.0
+Medical,48,29.1875,15.0,2.0,220.0
+Medicine,25,27.92,18.0,6.0,108.0
+Experimental Physics,8,27.25,25.5,14.0,54.0
+Nautical / Maritime,20,26.625,19.0,2.5,130.0
+C' Geographical Atlases,17,25.823529411764707,20.0,4.5,75.0
+Medical Books,61,25.59016393442623,15.0,2.0,180.0
+Bookstores,35,24.8,18.0,2.0,160.0
+Gifts and Prizes,58,23.32758620689655,20.0,1.0,170.0
+"Historical, Mythological, etc.",88,23.306818181818183,15.0,0.75,150.0
+German,32,22.328125,18.5,4.0,55.0
+"Geographical, Astronomical",17,22.0,12.0,3.0,120.0
+Greek Ecclesiastical Books,41,20.865853658536587,13.0,1.0,70.0
+Philology / Literature,28,19.821428571428573,14.0,3.0,60.0
+Legal and Political,25,19.6,15.0,5.0,72.0
+Classical Greek and Latin Authors,146,19.506849315068493,10.0,3.0,120.0
+Chemistry,5,19.5,15.0,7.5,35.0
+"Historical, Mythological etc.",31,18.758064516129032,12.0,2.0,60.0
+Philology,63,18.61904761904762,8.0,2.0,300.0
+"Geography, Astronomy",25,18.18,12.0,2.0,80.0
+Songbooks / Vocal Music,6,17.333333333333332,16.0,10.0,28.0
+E' Classical Greek and Latin Authors (Texts),27,17.10185185185185,6.0,1.5,102.5
+Ecclesiastical of Greece,30,16.966666666666665,9.5,1.0,54.0
+"15th Historical, Mythological, Archaeological",51,15.941176470588236,10.0,2.0,60.0
+Medical / Medicine,29,15.551724137931034,10.0,3.0,50.0
+"Agricultural, Industrial, Technical",21,15.261904761904763,6.0,2.0,150.0
+Greek Authors,305,15.224590163934426,9.0,1.0,170.0
+"IV. Texts, Scholia, Paraphrases, Interpretations of Greek and Latin Authors - A. Greek Authors",122,15.206557377049181,9.5,1.5,220.0
+Commercial / Commerce,52,15.028846153846153,12.0,2.0,50.0
+14. Philology / Literature,28,14.732142857142858,10.0,1.5,95.0
+Natural History,23,14.217391304347826,15.0,5.0,25.0
+Sourlas-Gerardos Publications,28,13.625,7.5,3.0,75.0
+Commerce,18,13.0,10.0,0.5,40.0
+Ecclesiastical Books of Venice,18,12.88888888888889,9.0,2.0,35.0
+History of Literature,12,12.416666666666666,12.0,5.0,20.0
+Mathematics,30,11.933333333333334,9.0,5.0,54.0
+Pedagogy,77,11.785714285714286,9.0,2.0,60.0
+10. Physical and Mathematical Geography,15,11.733333333333333,12.0,5.0,20.0
+"Mathematics, Natural Sciences",16,11.0625,8.5,3.0,35.0
+Hymnology / Music,5,11.0,10.0,5.0,18.0
+Venice Editions,9,10.88888888888889,9.0,5.0,20.0
+Gifts and Awards,58,10.849137931034482,9.0,0.25,40.0
+"Novels, short stories",401,10.824189526184538,9.0,0.5,200.0
+Pedagogics,45,10.6,7.5,1.5,40.0
+Languages,22,10.409090909090908,8.0,1.0,40.0
+Errata,19,10.289473684210526,7.5,1.5,40.0
+Poems,106,10.099056603773585,5.0,0.5,140.0
+Classic Greek and Latin Authors,20,9.8,6.0,3.0,47.5
+6. Classical Greek and Latin Authors,20,9.725,6.5,1.0,47.5
+"IV. TEXTS, SCHOLIA, PARAPHRASES, INTERPRETATIONS OF GREEK AND LATIN AUTHORS - B. LATIN AUTHORS",17,9.676470588235293,10.0,3.0,20.0
+3. Pedagogy,18,9.527777777777779,5.0,1.5,55.0
+V. Languages,20,9.4,8.0,2.5,24.0
+7. Russian,5,9.4,6.0,1.5,20.0
+Novels and Short Stories,34,9.367647058823529,6.0,2.0,35.0
+Philosophy,53,9.27122641509434,5.0,1.375,50.0
+"Hellenic Schools, Girls' High Schools and Gymnasiums",215,9.226279069767441,6.0,1.5,120.0
+V. Italian,25,9.16,6.0,2.5,35.0
+"IV. Texts, Scholia, Paraphrases, Interpretations of Greek and Latin Authors - B. Latin Authors",16,9.15625,9.0,4.0,16.0
+11. Philosophy,18,8.916666666666666,7.75,4.0,20.0
+Latin Authors,271,8.668819188191883,5.0,2.0,162.0
+"Secondary Education, Normal Schools and Girls' Schools",27,8.38888888888889,8.0,3.0,14.0
+III. History,29,8.258620689655173,8.0,2.0,15.0
+ST' Printed School Forms & Materials,9,8.25,3.5,0.25,35.0
+V. LANGUAGES,43,8.174418604651162,8.0,2.0,25.0
+French,290,7.904310344827586,6.0,0.75,50.0
+Z. Foreign Languages,57,7.9035087719298245,6.5,1.5,25.0
+French Books,77,7.714285714285714,5.5,1.0,40.0
+Miscellaneous,81,7.5,5.0,1.0,40.0
+"Texts, Scholia, Paraphrases, Interpretations of Greek and Latin Authors - A. Greek Authors",14,7.392857142857143,4.5,1.0,30.0
+C' Experimental Physics,10,7.0,5.0,1.5,15.0
+9. Gifts and Prizes for Children and Teenagers,42,6.9523809523809526,5.0,2.0,40.0
+VI. Latin,35,6.442857142857143,6.0,2.0,20.0
+"Home Economics, Handicrafts",12,6.416666666666667,6.0,5.0,10.0
+Natural History / Physiognomy,32,6.078125,5.0,2.0,12.0
+Music,15,6.066666666666666,5.0,1.0,18.0
+Bookstore / Books,19,5.7105263157894735,5.0,1.0,12.0
+Orthography and Parsing Works,9,5.555555555555555,6.0,3.0,7.0
+Compositions,10,5.15,4.0,2.5,8.5
+Theater,381,5.061679790026247,4.0,1.0,90.0
+Lists of Irregular Verbs,8,5.0,5.0,2.0,10.0
+8. Turkish,25,4.96,4.0,1.0,12.0
+Geometry,13,4.75,4.0,3.0,10.0
+Greek Language,226,4.393805309734513,3.5,0.25,20.0
+Syntax Books,16,4.375,4.25,1.0,10.0
+Geography,33,4.015151515151516,3.5,1.0,8.5
+5. Ecclesiastical History,6,4.0,4.5,2.0,5.0
+History,26,3.9423076923076925,4.125,0.75,8.0
+Turkish,51,3.877450980392157,3.0,0.25,15.0
+Drawing,8,3.6875,2.25,0.5,8.5
+5. Mathematics,39,3.6153846153846154,3.5,0.5,10.0
+B' Anthropology,13,3.5961538461538463,2.5,0.5,10.0
+Religious Books,63,3.5714285714285716,1.0,0.25,20.0
+Arithmetic,28,3.5535714285714284,2.75,0.5,10.0
+"Kindergartens, Primary Schools, Urban Schools and Girls' High Schools",241,3.25,2.5,0.25,80.0
+Religion,142,2.6390845070422535,2.0,0.25,10.0
+Other Printed Materials for General School Use,8,2.4375,2.25,0.5,5.0
+Publications of Useful Books,5,2.0,2.0,2.0,2.0
+Calligraphy,17,1.8529411764705883,2.0,0.5,5.0
+2. Greek Language,5,0.5,0.5,0.25,1.0
