@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Gerardos Catalogues</title>
-    
+
     <!-- Fira Code Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -306,8 +307,11 @@
             display: none;
             position: fixed;
             z-index: 9999;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(255,255,255,0.95);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
             justify-content: center;
             align-items: center;
         }
@@ -321,7 +325,8 @@
 
         .modal-close {
             position: absolute;
-            top: 20px; right: 35px;
+            top: 20px;
+            right: 35px;
             color: var(--text-color);
             font-size: 28px;
             cursor: pointer;
@@ -329,330 +334,363 @@
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <!-- LEFT SIDEBAR -->
-    <div class="sidebar">
-        <img id="bookstore-img" src="bookstore.jpg" alt="Gerardo's Bookstore" onerror="tryNextImage(this)">
-        <div class="sidebar-caption">
-            Archive ID: Εν Κωνσταντινουπόλει Βιβλιοπωλείον Α. Κ. Γέραρδου και Σας<br>
-            Period: 1895 &amp; 1904<br>
-            Status: Indexed (2,578 records)
+    <div class="container">
+        <!-- LEFT SIDEBAR -->
+        <div class="sidebar">
+            <img id="bookstore-img" src="bookstore.jpg" alt="Gerardo's Bookstore" onerror="tryNextImage(this)">
+            <div class="sidebar-caption">
+                Archive ID: Εν Κωνσταντινουπόλει Βιβλιοπωλείον Α. Κ. Γέραρδου και Σας<br>
+                Period: 1895 &amp; 1904<br>
+                Status: Indexed (2,578 records)
+            </div>
+        </div>
+
+        <!-- MAIN RIGHT CONTENT AREA -->
+        <div class="main-content">
+            <header>
+                <h1 id="main-title">The Gerardos Catalogues</h1>
+                <p class="subtitle" id="main-subtitle">Digital Repository: A Late Ottoman Bookstore</p>
+            </header>
+
+            <!-- CONTROLS & SEARCH -->
+            <div class="controls-panel">
+                <!-- ALWAYS VISIBLE MAIN SEARCH BAR -->
+                <div class="main-search-wrapper">
+                    <input type="text" id="customSearchInput" class="main-search-input"
+                        placeholder="Search catalog (e.g. Sophocles, Θεολογία, Primer)..."
+                        oninput="onCustomSearch(this.value)">
+                </div>
+
+                <!-- AUTOMATIC KEYWORD PRESETS -->
+                <div class="search-chips" id="chips-container">
+                    <span class="chip shuffle-btn" onclick="generateDynamicChips()">🎲 Suggest Keywords</span>
+                </div>
+
+                <div class="toggle-container">
+                    <input type="checkbox" id="toggle-bundling" onchange="applyBundlingToggle()">
+                    <label for="toggle-bundling">Group Exact Matches (ON: Combine 1895 &amp; 1904 duplicate titles |
+                        OFF: Show full raw catalog)</label>
+                </div>
+            </div>
+
+            <!-- CHARTS SECTION -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <canvas id="yearChart"></canvas>
+                </div>
+            </div>
+
+            <span class="scroll-hint">↔ Scroll table horizontally to view full metadata</span>
+
+            <!-- DATA TABLE WRAPPER -->
+            <div class="table-scroll-wrapper">
+                <table id="catalogTable" class="display nowrap">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>YEAR</th>
+                            <th>AUTHOR (GR)</th>
+                            <th>AUTHOR (EN)</th>
+                            <th>TITLE (GR)</th>
+                            <th>TITLE (EN)</th>
+                            <th>CATEGORY</th>
+                            <th>PRICE</th>
+                            <th>SCAN</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- MAIN RIGHT CONTENT AREA -->
-    <div class="main-content">
-        <header>
-            <h1 id="main-title">The Gerardos Catalogues</h1>
-            <p class="subtitle" id="main-subtitle">Digital Repository: A Late Ottoman Bookstore</p>
-        </header>
-
-        <!-- CONTROLS & SEARCH -->
-        <div class="controls-panel">
-            <!-- ALWAYS VISIBLE MAIN SEARCH BAR -->
-            <div class="main-search-wrapper">
-                <input type="text" id="customSearchInput" class="main-search-input" placeholder="Search catalog (e.g. Sophocles, Θεολογία, Primer)..." oninput="onCustomSearch(this.value)">
-            </div>
-
-            <!-- AUTOMATIC KEYWORD PRESETS -->
-            <div class="search-chips" id="chips-container">
-                <span class="chip shuffle-btn" onclick="generateDynamicChips()">🎲 Suggest Keywords</span>
-            </div>
-
-            <div class="toggle-container">
-                <input type="checkbox" id="toggle-bundling" onchange="applyBundlingToggle()">
-                <label for="toggle-bundling">Group Exact Matches (ON: Combine 1895 &amp; 1904 duplicate titles | OFF: Show full raw catalog)</label>
-            </div>
-        </div>
-
-        <!-- CHARTS SECTION -->
-        <div class="charts-grid">
-            <div class="chart-card">
-                <canvas id="categoryChart"></canvas>
-            </div>
-            <div class="chart-card">
-                <canvas id="yearChart"></canvas>
-            </div>
-        </div>
-
-        <span class="scroll-hint">↔ Scroll table horizontally to view full metadata</span>
-
-        <!-- DATA TABLE WRAPPER -->
-        <div class="table-scroll-wrapper">
-            <table id="catalogTable" class="display nowrap">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>YEAR</th>
-                        <th>AUTHOR (GR)</th>
-                        <th>AUTHOR (EN)</th>
-                        <th>TITLE (GR)</th>
-                        <th>TITLE (EN)</th>
-                        <th>CATEGORY</th>
-                        <th>PRICE</th>
-                        <th>SCAN</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+    <!-- LIGHTBOX MODAL -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="modal-close">[X]</span>
+        <img class="modal-content" id="modalImage">
     </div>
-</div>
 
-<!-- LIGHTBOX MODAL -->
-<div id="imageModal" class="modal" onclick="closeModal()">
-    <span class="modal-close">[X]</span>
-    <img class="modal-content" id="modalImage">
-</div>
+    <script>
+        let rawData = [];
+        let dataTable = null;
+        let categoryChartInstance = null;
+        let yearChartInstance = null;
 
-<script>
-let rawData = [];
-let dataTable = null;
-let categoryChartInstance = null;
-let yearChartInstance = null;
-
-const imageCandidates = ['bookstore.png', 'bookstore.jpeg', 'store.jpg', 'store.png', 'https://via.placeholder.com/380x500/ffffff/6b7280?text=BOOKSTORE+PHOTO'];
-let imgCandidateIdx = 0;
-function tryNextImage(imgEl) {
-    if (imgCandidateIdx < imageCandidates.length) {
-        imgEl.src = imageCandidates[imgCandidateIdx++];
-    }
-}
-
-const bilingualTerms = [
-    { en: "Kindergarten", gr: "ΝΗΠΙΑΓΩΓΕΙΑ" },
-    { en: "Primers", gr: "᾿Αλφαβητάριον" },
-    { en: "Literature", gr: "ΦΙΛΟΛΟΓΙΚΑ" },
-    { en: "Theology", gr: "ΘΕΟΛΟΓΙΑ" },
-    { en: "History", gr: "ΙΣΤΟΡΙΑ" },
-    { en: "Law", gr: "ΝΟΜΙΚΑ" }
-];
-
-function stripGreekAccents(str) {
-    if (!str) return '';
-    return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
-
-// Universal Greek/English Diacritic Insensitive Search across ALL columns
-$.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-    let query = stripGreekAccents($('#customSearchInput').val());
-    if (!query) return true;
-    
-    // Concatenate all row data into one searchable string
-    let fullRowText = stripGreekAccents(data.join(' '));
-    return fullRowText.includes(query);
-});
-
-// Generate Keyword Suggestions Immediately On Page Load
-$(document).ready(function() {
-    generateDynamicChips();
-});
-
-$(document.body).ready(function() {
-    Papa.parse("master_catalogs_combined.csv", {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            rawData = results.data;
-            initDataTable(rawData);
-            initCharts(rawData);
-            generateDynamicChips();
-        }
-    });
-});
-
-function initDataTable(data) {
-    if (dataTable) {
-        dataTable.destroy();
-        $('#catalogTable tbody').empty();
-    }
-
-    dataTable = $('#catalogTable').DataTable({
-        data: data,
-        dom: 'Brtip',
-        buttons: ['csvHtml5', 'excelHtml5'],
-        columns: [
-            {
-                className: 'dt-control',
-                orderable: false,
-                data: null,
-                defaultContent: ''
-            },
-            { data: 'catalog_year' },
-            { data: 'author', defaultContent: '' },
-            { data: 'author_transcribed', defaultContent: '' },
-            { data: 'title', defaultContent: '' },
-            { data: 'title_english', defaultContent: '' },
-            { data: 'main_category_english', defaultContent: '' },
-            { 
-                data: null, 
-                render: function(data) {
-                    return data.price_display || ((data.price || '') + ' ' + (data.currency || '')).trim() || '—';
-                } 
-            },
-            {
-                data: null,
-                render: function(data) {
-                    if (!data.source_file) return '';
-                    let subfolder = data.catalog_year == '1895' ? 'images_1895' : 'images_1904';
-                    let path = `${subfolder}/${data.source_file}`;
-                    return `<button class="btn-view-scan" onclick="openModal('${path}')">Scan</button>`;
-                }
+        const imageCandidates = ['bookstore.png', 'bookstore.jpeg', 'store.jpg', 'store.png', 'https://via.placeholder.com/380x500/ffffff/6b7280?text=BOOKSTORE+PHOTO'];
+        let imgCandidateIdx = 0;
+        function tryNextImage(imgEl) {
+            if (imgCandidateIdx < imageCandidates.length) {
+                imgEl.src = imageCandidates[imgCandidateIdx++];
             }
-        ],
-        order: [[1, 'asc']],
-        pageLength: 25,
-        scrollX: true
-    });
-
-    // Re-apply search query to current dataset
-    let curSearch = $('#customSearchInput').val();
-    if (curSearch) {
-        dataTable.draw();
-    }
-
-    dataTable.on('draw', function() {
-        let filteredData = dataTable.rows({ filter: 'applied' }).data().toArray();
-        updateCharts(filteredData);
-    });
-}
-
-function generateDynamicChips() {
-    const chipsContainer = $('#chips-container');
-    $('.dynamic-chip').remove();
-
-    let shuffled = [...bilingualTerms].sort(() => 0.5 - Math.random()).slice(0, 4);
-    
-    shuffled.forEach(item => {
-        chipsContainer.append(
-            `<span class="chip dynamic-chip" onclick="applySearch('${item.gr}')">${item.en} (${item.gr})</span>`
-        );
-    });
-}
-
-function onCustomSearch(val) {
-    if (dataTable) {
-        dataTable.draw();
-    }
-}
-
-function applySearch(term) {
-    $('#customSearchInput').val(term);
-    if (dataTable) {
-        dataTable.draw();
-    }
-}
-
-function applyBundlingToggle() {
-    let isBundled = $('#toggle-bundling').is(':checked');
-    
-    if (!isBundled) {
-        initDataTable(rawData);
-        return;
-    }
-
-    let grouped = {};
-    rawData.forEach(item => {
-        let key = stripGreekAccents((item.author || '') + '|' + (item.title || ''));
-        if (!grouped[key]) grouped[key] = [];
-        grouped[key].push(item);
-    });
-
-    let bundledRows = [];
-    Object.keys(grouped).forEach(key => {
-        let group = grouped[key];
-        let primary = Object.assign({}, group[0]);
-        
-        // Collect all distinct catalog years present in this group
-        let years = [...new Set(group.map(g => g.catalog_year))].sort();
-        
-        if (years.length > 1) {
-            primary.catalog_year = years.join(' & ') + ' [Bundled]';
-        } else if (group.length > 1) {
-            primary.catalog_year = years[0] + ' (' + group.length + ' entries)';
         }
-        
-        bundledRows.push(primary);
-    });
 
-    initDataTable(bundledRows);
-}
+        const bilingualTerms = [
+            { en: "Kindergarten", gr: "ΝΗΠΙΑΓΩΓΕΙΑ" },
+            { en: "Primers", gr: "᾿Αλφαβητάριον" },
+            { en: "Literature", gr: "ΦΙΛΟΛΟΓΙΚΑ" },
+            { en: "Theology", gr: "ΘΕΟΛΟΓΙΑ" },
+            { en: "History", gr: "ΙΣΤΟΡΙΑ" },
+            { en: "Law", gr: "ΝΟΜΙΚΑ" }
+        ];
 
-function initCharts(data) {
-    const ctxCat = document.getElementById('categoryChart').getContext('2d');
-    const ctxYear = document.getElementById('yearChart').getContext('2d');
-
-    Chart.defaults.color = '#6b7280';
-    Chart.defaults.font.family = "'Fira Code', monospace";
-
-    categoryChartInstance = new Chart(ctxCat, {
-        type: 'doughnut',
-        data: getCategoryChartData(data),
-        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Category Distribution', color: '#111827' } } }
-    });
-
-    yearChartInstance = new Chart(ctxYear, {
-        type: 'bar',
-        data: getYearChartData(data),
-        options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Catalog Volume by Year', color: '#111827' } } }
-    });
-}
-
-function updateCharts(data) {
-    if (!categoryChartInstance || !yearChartInstance) return;
-    
-    let catData = getCategoryChartData(data);
-    categoryChartInstance.data = catData;
-    categoryChartInstance.update();
-
-    let yrData = getYearChartData(data);
-    yearChartInstance.data = yrData;
-    yearChartInstance.update();
-}
-
-function getCategoryChartData(data) {
-    let counts = {};
-    data.forEach(d => {
-        let cat = d.main_category_english || 'Other';
-        counts[cat] = (counts[cat] || 0) + 1;
-    });
-    return {
-        labels: Object.keys(counts).slice(0, 7),
-        datasets: [{
-            data: Object.values(counts).slice(0, 7),
-            backgroundColor: ['#111827', '#059669', '#0284c7', '#d97706', '#7c3aed', '#dc2626', '#4b5563']
-        }]
-    };
-}
-
-function getYearChartData(data) {
-    let counts = { '1895': 0, '1904': 0 };
-    data.forEach(d => {
-        if (d.catalog_year && counts.hasOwnProperty(d.catalog_year)) {
-            counts[d.catalog_year]++;
+        function stripGreekAccents(str) {
+            if (!str) return '';
+            return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
-    });
-    return {
-        labels: Object.keys(counts),
-        datasets: [{
-            label: 'Count',
-            data: Object.values(counts),
-            backgroundColor: ['#111827', '#059669']
-        }]
-    };
-}
 
-function openModal(imgSrc) {
-    document.getElementById('modalImage').src = imgSrc;
-    document.getElementById('imageModal').style.display = 'flex';
-}
+        // Universal Greek/English Diacritic Insensitive Search across ALL columns
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            let query = stripGreekAccents($('#customSearchInput').val());
+            if (!query) return true;
 
-function closeModal() {
-    document.getElementById('imageModal').style.display = 'none';
-}
-</script>
+            // Concatenate all row data into one searchable string
+            let fullRowText = stripGreekAccents(data.join(' '));
+            return fullRowText.includes(query);
+        });
+
+        // Generate Keyword Suggestions Immediately On Page Load
+        $(document).ready(function () {
+            generateDynamicChips();
+        });
+
+        $(document.body).ready(function () {
+            Papa.parse("master_catalogs_combined.csv", {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function (results) {
+                    rawData = results.data;
+                    initDataTable(rawData);
+                    initCharts(rawData);
+                    generateDynamicChips();
+                }
+            });
+        });
+
+        function initDataTable(data) {
+            if (dataTable) {
+                dataTable.destroy();
+                $('#catalogTable tbody').empty();
+            }
+
+            dataTable = $('#catalogTable').DataTable({
+                data: data,
+                dom: 'Brtip',
+                buttons: ['csvHtml5', 'excelHtml5'],
+                columns: [
+                    {
+                        className: 'dt-control',
+                        orderable: false,
+                        data: null,
+                        defaultContent: ''
+                    },
+                    { data: 'catalog_year' },
+                    { data: 'author', defaultContent: '' },
+                    { data: 'author_transcribed', defaultContent: '' },
+                    { data: 'title', defaultContent: '' },
+                    { data: 'title_english', defaultContent: '' },
+                    { data: 'main_category_english', defaultContent: '' },
+                    {
+                        data: null,
+                        render: function (data) {
+                            return data.price_display || ((data.price || '') + ' ' + (data.currency || '')).trim() || '—';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function (data) {
+                            if (!data.source_file) return '';
+                            let subfolder = data.catalog_year == '1895' ? 'images_1895' : 'images_1904';
+                            let path = `${subfolder}/${data.source_file}`;
+                            return `<button class="btn-view-scan" onclick="openModal('${path}')">Scan</button>`;
+                        }
+                    }
+                ],
+                order: [[1, 'asc']],
+                pageLength: 25,
+                scrollX: true
+            });
+
+            // Re-apply search query to current dataset
+            let curSearch = $('#customSearchInput').val();
+            if (curSearch) {
+                dataTable.draw();
+            }
+
+            dataTable.on('draw', function () {
+                let filteredData = dataTable.rows({ filter: 'applied' }).data().toArray();
+                updateCharts(filteredData);
+            });
+        }
+
+        function generateDynamicChips() {
+            const chipsContainer = $('#chips-container');
+            $('.dynamic-chip').remove();
+
+            if (!rawData || rawData.length === 0) return;
+
+            // Collect all distinct categories and subcategories
+            const categorySet = new Set();
+
+            rawData.forEach(item => {
+                // Main categories
+                if (item.main_category_english && item.main_category_english.trim().length > 2) {
+                    categorySet.add(item.main_category_english.trim());
+                }
+                if (item.category && item.category.trim().length > 2) {
+                    categorySet.add(item.category.trim());
+                }
+
+                // Subcategories
+                if (item.subcategory_english && item.subcategory_english.trim().length > 2) {
+                    categorySet.add(item.subcategory_english.trim());
+                }
+                if (item.subcategory && item.subcategory.trim().length > 2) {
+                    categorySet.add(item.subcategory.trim());
+                }
+            });
+
+            const allCategories = Array.from(categorySet);
+
+            // Pick 8 random distinct categories/subcategories
+            const shuffledTerms = allCategories.sort(() => 0.5 - Math.random()).slice(0, 8);
+
+            // Render the dynamic chips
+            shuffledTerms.forEach(term => {
+                const safeTerm = term.replace(/'/g, "\\'");
+                chipsContainer.append(
+                    `<span class="chip dynamic-chip" onclick="applySearch('${safeTerm}')">${term}</span>`
+                );
+            });
+        }
+
+        function onCustomSearch(val) {
+            if (dataTable) {
+                dataTable.draw();
+            }
+        }
+
+        function applySearch(term) {
+            $('#customSearchInput').val(term);
+            if (dataTable) {
+                dataTable.draw();
+            }
+        }
+
+        function applyBundlingToggle() {
+            let isBundled = $('#toggle-bundling').is(':checked');
+
+            if (!isBundled) {
+                initDataTable(rawData);
+                return;
+            }
+
+            let grouped = {};
+            rawData.forEach(item => {
+                let key = stripGreekAccents((item.author || '') + '|' + (item.title || ''));
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(item);
+            });
+
+            let bundledRows = [];
+            Object.keys(grouped).forEach(key => {
+                let group = grouped[key];
+                let primary = Object.assign({}, group[0]);
+
+                // Collect all distinct catalog years present in this group
+                let years = [...new Set(group.map(g => g.catalog_year))].sort();
+
+                if (years.length > 1) {
+                    primary.catalog_year = years.join(' & ') + ' [Bundled]';
+                } else if (group.length > 1) {
+                    primary.catalog_year = years[0] + ' (' + group.length + ' entries)';
+                }
+
+                bundledRows.push(primary);
+            });
+
+            initDataTable(bundledRows);
+        }
+
+        function initCharts(data) {
+            const ctxCat = document.getElementById('categoryChart').getContext('2d');
+            const ctxYear = document.getElementById('yearChart').getContext('2d');
+
+            Chart.defaults.color = '#6b7280';
+            Chart.defaults.font.family = "'Fira Code', monospace";
+
+            categoryChartInstance = new Chart(ctxCat, {
+                type: 'doughnut',
+                data: getCategoryChartData(data),
+                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Category Distribution', color: '#111827' } } }
+            });
+
+            yearChartInstance = new Chart(ctxYear, {
+                type: 'bar',
+                data: getYearChartData(data),
+                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Catalog Volume by Year', color: '#111827' } } }
+            });
+        }
+
+        function updateCharts(data) {
+            if (!categoryChartInstance || !yearChartInstance) return;
+
+            let catData = getCategoryChartData(data);
+            categoryChartInstance.data = catData;
+            categoryChartInstance.update();
+
+            let yrData = getYearChartData(data);
+            yearChartInstance.data = yrData;
+            yearChartInstance.update();
+        }
+
+        function getCategoryChartData(data) {
+            let counts = {};
+            data.forEach(d => {
+                let cat = d.main_category_english || 'Other';
+                counts[cat] = (counts[cat] || 0) + 1;
+            });
+            return {
+                labels: Object.keys(counts).slice(0, 7),
+                datasets: [{
+                    data: Object.values(counts).slice(0, 7),
+                    backgroundColor: ['#111827', '#059669', '#0284c7', '#d97706', '#7c3aed', '#dc2626', '#4b5563']
+                }]
+            };
+        }
+
+        function getYearChartData(data) {
+            let counts = { '1895': 0, '1904': 0 };
+            data.forEach(d => {
+                if (d.catalog_year && counts.hasOwnProperty(d.catalog_year)) {
+                    counts[d.catalog_year]++;
+                }
+            });
+            return {
+                labels: Object.keys(counts),
+                datasets: [{
+                    label: 'Count',
+                    data: Object.values(counts),
+                    backgroundColor: ['#111827', '#059669']
+                }]
+            };
+        }
+
+        function openModal(imgSrc) {
+            document.getElementById('modalImage').src = imgSrc;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+    </script>
 </body>
+
 </html>
