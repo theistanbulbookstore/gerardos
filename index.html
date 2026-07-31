@@ -495,7 +495,7 @@
                     { data: 'catalog_year' },
                     { data: 'author', defaultContent: '' },
                     { data: 'author_transcribed', defaultContent: '' },
-                    { data: 'title', defaultContent: '' },
+{ data: 'title', defaultContent: '' },
                     { data: 'title_english', defaultContent: '' },
                     { data: 'main_category_english', defaultContent: '' },
                     {
@@ -503,37 +503,43 @@
                         render: function (data) {
                             if (!data.price && !data.price_display) return '—';
 
-                            // 1. If price_display already has clean "γρ." and "παρ." formatted, use it directly
-                            let display = (data.price_display || '').toString().trim();
-                            if (display.includes('γρ') && display.includes('παρ')) {
-                                return display;
-                            }
-
-                            // 2. Otherwise, clean raw price string and strip hallucinated drachmas
-                            let raw = (data.price || display)
+                            // 1. Get raw string and strip ONLY hallucinated Drachma labels
+                            let raw = (data.price_display || data.price || '')
                                 .toString()
-                                .replace(/\s*(?:Δρχ|Δρ|drachmas|Δραχμαί|δρχ|₯)[\.\s]*/gi, '')
+                                .replace(/(?:Δρχ|Δρ|drachmas|Δραχμαί|δρχ|₯)/gi, '')
                                 .trim();
 
                             if (!raw || raw === '—') return '—';
 
-                            // 3. Handle decimal prices like "1.20" -> "1 γρ. 20 παρ."
-                            if (raw.includes('.')) {
-                                let parts = raw.split('.');
-                                let grosia = parts[0].trim();
-                                let paras = parts[1].trim();
+                            // 2. Already formatted properly (e.g. "1 γρ. 20 παρ." or "5 γρ.")? Return immediately!
+                            if (/^\d+\s*γρ\.\s*\d+\s*παρ\.$/i.test(raw) || /^\d+\s*(?:γρ\.|παρ\.)$/i.test(raw)) {
+                                return raw;
+                            }
 
-                                if (paras.length === 1) paras += '0';
-
+                            // 3. Clean Decimals (e.g., "1.20" -> "1 γρ. 20 παρ.")
+                            let decimalMatch = raw.match(/^(\d+)[\.,](\d+)$/);
+                            if (decimalMatch) {
+                                let grosia = decimalMatch[1];
+                                let paras = decimalMatch[2].length === 1 ? decimalMatch[2] + '0' : decimalMatch[2];
                                 return `${grosia} γρ. ${paras} παρ.`;
                             }
 
-                            // 4. Handle pure paras vs grosia
-                            if (data.currency && data.currency.includes('παρ')) {
-                                return `${raw} παρ.`;
+                            // 4. Split 1895 strings (e.g., "γρ. 2, παρ. 20" or "2, παρ 20")
+                            let nums = raw.match(/\d+/g);
+                            if (nums && nums.length === 2 && /παρ|π/i.test(raw) && /γρ/i.test(raw)) {
+                                return `${nums[0]} γρ. ${nums[1]} παρ.`;
                             }
 
-                            return `${raw} γρ.`;
+                            // 5. Single number entries (paras vs grosia)
+                            if (nums && nums.length === 1) {
+                                if (/παρ|π/i.test(raw) && !/γρ/i.test(raw)) {
+                                    return `${nums[0]} παρ.`;
+                                }
+                                return `${nums[0]} γρ.`;
+                            }
+
+                            // 6. SAFETY NET: Preserve any complex strings as-is
+                            return raw;
                         }
                     },
                     {
@@ -544,8 +550,7 @@
                             let path = `${subfolder}/${data.source_file}`;
                             return `<button class="btn-view-scan" onclick="openModal('${path}')">Scan</button>`;
                         }
-                    }
-                ],
+                    }                ],
                 order: [[1, 'asc']],
                 pageLength: 25,
                 scrollX: true
