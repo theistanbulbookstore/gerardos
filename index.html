@@ -543,17 +543,25 @@
                 });
             }
 
-            // Completely strips ALL numbers (Roman, Arabic, Greek ordinal marks) and section prefixes
+            // Safely strip section prefixes without eating starting letters of words like Chemistry or Dictionaries
             function cleanLabel(str) {
                 if (!str) return '';
-                return str
-                    .replace(/[0-9]/g, '')                                             // Remove all Arabic digits (0-9)
-                    .replace(/^[IVXLCDMivxlcdm\.\s\-\–\—\(\)΄\']+/i, '')              // Remove leading Roman numerals & symbols
-                    .replace(/^[Α-Ωα-ω]{1,3}[΄\']?\s+/i, '')                           // Remove Greek section marks (Δ΄, ΚΓ΄)
-                    .replace(/^[A-Za-z]\.\s*/, '')                                     // Remove section letters (A.)
-                    .replace(/[\-\–\—\.\,\(\)]/g, ' ')                                 // Strip leftover punctuation
-                    .replace(/\s+/g, ' ')                                             // Collapse extra spaces
-                    .trim();
+                let cleaned = str.trim();
+
+                // 1. Remove Roman numerals followed by a dot or space (e.g., "XII. ", "IV. ", "IV ")
+                cleaned = cleaned.replace(/^(?:[IVXLCDMivxlcdm]+)\b[\.\s]*/, '');
+
+                // 2. Remove Arabic digits followed by dot/space/dash (e.g., "1. ", "12 - ")
+                cleaned = cleaned.replace(/^[0-9]+\b[\.\s\-)]*/, '');
+
+                // 3. Remove Greek section marks (e.g., "Δ΄ ", "ΚΓ΄ ")
+                cleaned = cleaned.replace(/^[Α-Ωα-ω]{1,3}[΄\']?\s+/, '');
+
+                // 4. Remove single letter section prefixes (e.g., "A. ")
+                cleaned = cleaned.replace(/^[A-Za-z]\.\s*/, '');
+
+                // 5. Clean up any leftover leading punctuation or double spaces
+                return cleaned.replace(/^[\.\,\-\–\—\(\)\s]+/, '').replace(/\s+/g, ' ').trim();
             }
 
             const keywordPairs = new Map(); // Map: English Key -> { en, gr }
@@ -570,7 +578,7 @@
                     cleanGr = toTitleCaseGreek(cleanGr);
 
                     const wordCount = cleanEn.split(' ').length;
-                    // Target short, number-free terms (3-25 chars, max 3 words)
+                    // Target short, clean terms (3-25 chars, max 3 words)
                     if (cleanEn.length >= 3 && cleanEn.length <= 25 && wordCount <= 3) {
                         const validGr = (cleanGr && cleanGr.toLowerCase() !== cleanEn.toLowerCase()) ? cleanGr : '';
                         keywordPairs.set(cleanEn, { en: cleanEn, gr: validGr });
