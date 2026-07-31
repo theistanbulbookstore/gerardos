@@ -146,56 +146,87 @@
             display: block;
         }
 
-        /* Browse by Genre Grid */
+        /* Browse by Genre Accordion & Chips */
         .genre-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             margin-top: 16px;
         }
 
-        .genre-card {
+        .genre-group {
             border: 1px solid var(--border-light);
-            padding: 12px;
-            background: #ffffff;
             border-radius: 2px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            background: #ffffff;
+            transition: border-color 0.15s ease;
         }
 
-        .genre-card:hover {
+        .genre-group:hover {
             border-color: var(--border-dark);
         }
 
-        .genre-card h4 {
-            margin: 0 0 4px 0;
-            font-size: 0.85rem;
+        .genre-summary {
             font-weight: 500;
-        }
-
-        .genre-card p {
-            margin: 0 0 10px 0;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .genre-card button {
-            background: transparent;
-            color: var(--text-color);
-            border: 1px solid var(--border-light);
-            padding: 4px 8px;
-            border-radius: 2px;
             cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
             font-family: var(--font-mono);
-            font-size: 0.7rem;
-            align-self: flex-start;
+            font-size: 0.85rem;
+            user-select: none;
         }
 
-        .genre-card button:hover {
+        .genre-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .genre-badge {
+            font-size: 0.75rem;
+            background: #f3f4f6;
+            color: var(--text-muted);
+            padding: 2px 8px;
+            border-radius: 2px;
+            border: 1px solid var(--border-light);
+        }
+
+        .subcat-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 8px;
+            padding: 12px 16px 16px 16px;
+            border-top: 1px solid var(--border-light);
+            background-color: #fafafa;
+        }
+
+        .subcat-link {
+            text-decoration: none;
+            color: var(--text-color);
+            background: #ffffff;
+            padding: 8px 12px;
+            border-radius: 2px;
+            border: 1px solid var(--border-light);
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .subcat-link:hover {
             border-color: var(--border-dark);
             background: var(--border-dark);
             color: #ffffff;
+        }
+
+        .subcat-link:hover .subcat-count {
+            color: #ffffff;
+        }
+
+        .subcat-count {
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
         /* About Text Styles */
@@ -526,13 +557,24 @@
 
             <!-- TAB 2: BROWSE BY GENRE -->
 <div id="browse-genre-tab" class="tab-content">
+    <!-- SEARCH BAR -->
     <div class="main-search-wrapper" style="margin-bottom: 16px;">
         <input type="text" id="genreSearchInput" class="main-search-input"
-            placeholder="Search genres (e.g. History, Ἱστορία, Medical)..."
+            placeholder="Search genres or subcategories (e.g. History, Ἱστορία, Medical)..."
             oninput="filterGenreGrid(this.value)">
     </div>
+
+    <!-- TOP QUICK-ACCESS CATEGORY CHIPS -->
+    <div style="margin-bottom: 20px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 8px;">Top Main Categories:</span>
+        <div id="topCategoryChips" class="search-chips">
+            <!-- Dynamically populated main category chips -->
+        </div>
+    </div>
+
+    <!-- ACCORDION CONTAINER -->
     <div id="categoryGrid" class="genre-grid">
-        <!-- JavaScript will automatically populate the cards inside here -->
+        <!-- Main accordion items populated by JavaScript -->
     </div>
 </div>
 
@@ -1094,69 +1136,121 @@
     <!-- PASTE THE JAVASCRIPT CODE RIGHT HERE -->
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-      fetch('genres_taxonomy.json')
-        .then(response => response.json())
-        .then(data => {
-          const grid = document.getElementById('categoryGrid');
-          if (!grid) return;
-          grid.innerHTML = ''; // Clear placeholder
+  // Helper: Strip prefix noise (numbers, Roman numerals, A'/B' marks) & Title Case
+  function cleanGenreName(str) {
+    if (!str) return '';
+    let cleaned = str.trim();
 
-          for (const [categoryName, catData] of Object.entries(data)) {
-            const details = document.createElement('details');
-            details.className = 'genre-group';
-            details.style.cssText = 'border: 1px solid #ccc; padding: 0.75rem 1rem; border-radius: 4px; background: #fff; margin-bottom: 10px;';
+    // 1. Remove Roman numerals followed by dot/space (e.g. "XII. ", "IV. ")
+    cleaned = cleaned.replace(/^(?:[IVXLCDMivxlcdm]+)\b[\.\s\-\–\—]*/, '');
 
-            const summary = document.createElement('summary');
-            summary.style.cssText = 'font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center;';
-            summary.innerHTML = `<span>📜 ${categoryName}</span> <span style="font-size: 0.85rem; background: #f0f0f0; padding: 2px 8px; border-radius: 10px;">${catData.total_count}</span>`;
-            details.appendChild(summary);
+    // 2. Remove Arabic numbers followed by dot/space/dash/ordinal (e.g. "10. ", "15th ")
+    cleaned = cleaned.replace(/^[0-9]+(?:th|st|nd|rd)?\b[\.\s\-\–\—)]*/i, '');
 
-            const subGrid = document.createElement('div');
-            subGrid.className = 'subcat-container';
-            subGrid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #eee;';
+    // 3. Remove Greek section prefix marks (e.g. "A' ", "B' ", "Δ΄ ")
+    cleaned = cleaned.replace(/^[Α-Ωα-ωA-Za-z][΄\']?\s+/, '');
 
-            catData.subcategories.forEach(sub => {
-              const subLink = document.createElement('a');
-              subLink.className = 'subcat-link';
-              subLink.href = `?genre=${encodeURIComponent(sub.name)}`;
-              subLink.style.cssText = 'text-decoration: none; color: #222; background: #f8f9fa; padding: 6px 10px; border-radius: 4px; border: 1px solid #e2e8f0; font-size: 0.9rem; display: flex; justify-content: space-between;';
-              subLink.innerHTML = `<span>${sub.name}</span> <span style="color: #666; font-weight: bold;">(${sub.count})</span>`;
-              subGrid.appendChild(subLink);
-            });
+    // 4. Clean leading punctuation
+    cleaned = cleaned.replace(/^[\.\,\-\–\—\(\)\s]+/, '').trim();
 
-            details.appendChild(subGrid);
-            grid.appendChild(details);
-          }
-        })
-        .catch(error => console.error('Error loading genres taxonomy:', error));
-    });
+    // Convert ALL CAPS text to Title Case (e.g., "MUSIC" -> "Music")
+    if (cleaned === cleaned.toUpperCase()) {
+      cleaned = cleaned.toLowerCase().replace(/(?:^|\s|\/|\()\S/g, a => a.toUpperCase());
+    }
 
-    function filterGenreGrid(query) {
-      const searchTerm = query.toLowerCase().trim();
-      const groups = document.querySelectorAll('.genre-group');
+    return cleaned;
+  }
 
-      groups.forEach(group => {
-        const links = group.querySelectorAll('.subcat-link');
-        let hasMatch = false;
+  fetch('genres_taxonomy.json')
+    .then(response => response.json())
+    .then(data => {
+      const grid = document.getElementById('categoryGrid');
+      const chipsContainer = document.getElementById('topCategoryChips');
+      if (!grid) return;
 
-        links.forEach(link => {
-          const text = link.textContent.toLowerCase();
-          if (text.includes(searchTerm)) {
-            link.style.display = 'flex';
-            hasMatch = true;
-          } else {
-            link.style.display = 'none';
-          }
+      grid.innerHTML = '';
+      if (chipsContainer) chipsContainer.innerHTML = '';
+
+      for (const [rawCategoryName, catData] of Object.entries(data)) {
+        const categoryName = cleanGenreName(rawCategoryName);
+        const groupId = 'genre-group-' + categoryName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+        // --- 1. RENDER TOP QUICK-ACCESS CHIP ---
+        if (chipsContainer) {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.innerHTML = `${categoryName} (${catData.total_count})`;
+          chip.onclick = function() {
+            const targetGroup = document.getElementById(groupId);
+            if (targetGroup) {
+              targetGroup.setAttribute('open', 'true');
+              targetGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          };
+          chipsContainer.appendChild(chip);
+        }
+
+        // --- 2. RENDER ACCORDION ITEM ---
+        const details = document.createElement('details');
+        details.className = 'genre-group';
+        details.id = groupId;
+
+        const summary = document.createElement('summary');
+        summary.className = 'genre-summary';
+        summary.innerHTML = `<span>▶ ${categoryName}</span> <span class="genre-badge">${catData.total_count} items</span>`;
+        details.appendChild(summary);
+
+        const subGrid = document.createElement('div');
+        subGrid.className = 'subcat-container';
+
+        catData.subcategories.forEach(sub => {
+          const subName = cleanGenreName(sub.name);
+          const subLink = document.createElement('a');
+          subLink.className = 'subcat-link';
+          subLink.onclick = function() {
+            // Switch back to Homepage tab and apply search filter
+            const homepageBtn = document.querySelectorAll('.nav-tab-btn')[0];
+            switchTab('homepage-tab', homepageBtn);
+            applySearch(subName);
+          };
+          subLink.innerHTML = `<span>${subName}</span> <span class="subcat-count">(${sub.count})</span>`;
+          subGrid.appendChild(subLink);
         });
 
-        if (hasMatch || group.querySelector('summary').textContent.toLowerCase().includes(searchTerm)) {
-          group.style.display = 'block';
-          if (searchTerm.length > 0) group.setAttribute('open', 'true');
-        } else {
-          group.style.display = 'none';
-        }
-      });
+        details.appendChild(subGrid);
+        grid.appendChild(details);
+      }
+    })
+    .catch(error => console.error('Error loading genres taxonomy:', error));
+});
+
+function filterGenreGrid(query) {
+  const searchTerm = query.toLowerCase().trim();
+  const groups = document.querySelectorAll('.genre-group');
+
+  groups.forEach(group => {
+    const links = group.querySelectorAll('.subcat-link');
+    let hasMatch = false;
+
+    links.forEach(link => {
+      const text = link.textContent.toLowerCase();
+      if (text.includes(searchTerm)) {
+        link.style.display = 'flex';
+        hasMatch = true;
+      } else {
+        link.style.display = 'none';
+      }
+    });
+
+    const summaryText = group.querySelector('summary').textContent.toLowerCase();
+    if (hasMatch || summaryText.includes(searchTerm)) {
+      group.style.display = 'block';
+      if (searchTerm.length > 0) group.setAttribute('open', 'true');
+    } else {
+      group.style.display = 'none';
     }
+  });
+}
     </script>
 </body>
 
