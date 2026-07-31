@@ -379,9 +379,11 @@
             <!-- CHARTS SECTION -->
             <div class="charts-grid">
                 <div class="chart-card">
+                    <h3 style="margin: 0 0 8px 0; font-size: 0.85rem; font-weight: 500; color: var(--text-color);">Category Distribution</h3>
                     <canvas id="categoryChart"></canvas>
                 </div>
                 <div class="chart-card">
+                    <h3 style="margin: 0 0 8px 0; font-size: 0.85rem; font-weight: 500; color: var(--text-color);">Catalog Volume by Year</h3>
                     <canvas id="yearChart"></canvas>
                 </div>
             </div>
@@ -696,29 +698,19 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: {
-                            top: 25 // Adds spacing so title never overlaps the legend
-                        }
-                    },
                     plugins: {
-                        title: { 
-                            display: true, 
-                            text: 'Category Distribution', 
-                            color: '#111827',
-                            padding: { bottom: 15 }
-                        },
+                        title: { display: false },
                         legend: {
                             position: 'right',
-                            labels: { 
-                                boxWidth: 10, 
-                                padding: 5, 
+                            labels: {
+                                boxWidth: 10,
+                                padding: 4,
                                 font: { size: 9 },
                                 generateLabels: function(chart) {
                                     const original = Chart.overrides.doughnut.plugins.legend.labels.generateLabels(chart);
                                     return original.map(label => {
-                                        if (label.text.length > 28) {
-                                            label.text = label.text.substring(0, 26) + '...';
+                                        if (label.text.length > 24) {
+                                            label.text = label.text.substring(0, 22) + '...';
                                         }
                                         return label;
                                     });
@@ -745,10 +737,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: { top: 25 }
-                    },
-                    plugins: { title: { display: true, text: 'Catalog Volume by Year', color: '#111827' } }
+                    plugins: { 
+                        title: { display: false } 
+                    }
                 }
             });
         }
