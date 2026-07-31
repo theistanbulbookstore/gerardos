@@ -344,7 +344,7 @@
             <div class="sidebar-caption">
                 Archive ID: Εν Κωνσταντινουπόλει Βιβλιοπωλείον Α. Κ. Γέραρδου και Σας<br>
                 Period: 1895 &amp; 1904<br>
-                Status: Indexed (2,578 records)
+                Status: Indexed (6,042 records)
             </div>
         </div>
 
@@ -661,39 +661,90 @@
             categoryChartInstance = new Chart(ctxCat, {
                 type: 'doughnut',
                 data: getCategoryChartData(data),
-                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Category Distribution', color: '#111827' } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Category Distribution', color: '#111827' },
+                        legend: {
+                            position: 'right',
+                            labels: { boxWidth: 10, padding: 6, font: { size: 10 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const val = context.raw;
+                                    const pct = ((val / total) * 100).toFixed(1);
+                                    return ` ${context.label}: ${val} items (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
 
             yearChartInstance = new Chart(ctxYear, {
                 type: 'bar',
                 data: getYearChartData(data),
-                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Catalog Volume by Year', color: '#111827' } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { title: { display: true, text: 'Catalog Volume by Year', color: '#111827' } }
+                }
             });
         }
 
         function updateCharts(data) {
             if (!categoryChartInstance || !yearChartInstance) return;
 
-            let catData = getCategoryChartData(data);
-            categoryChartInstance.data = catData;
+            categoryChartInstance.data = getCategoryChartData(data);
             categoryChartInstance.update();
 
-            let yrData = getYearChartData(data);
-            yearChartInstance.data = yrData;
+            yearChartInstance.data = getYearChartData(data);
             yearChartInstance.update();
         }
 
         function getCategoryChartData(data) {
             let counts = {};
+
+            // Count clean category names
             data.forEach(d => {
-                let cat = d.main_category_english || 'Other';
+                let cat = d.main_category_english || 'Uncategorized';
+                // Strip index prefixes (e.g. "IV. ", "12. ") for clean aggregation
+                cat = cat.replace(/^(?:[IVXLCDMivxlcdm0-9]+)\b[\.\s]*/i, '').trim() || 'Uncategorized';
                 counts[cat] = (counts[cat] || 0) + 1;
             });
+
+            // Sort highest to lowest
+            let sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+            // Pick Top 12 categories
+            let topLimit = 12;
+            let topCategories = sorted.slice(0, topLimit);
+            let rest = sorted.slice(topLimit);
+
+            let labels = topCategories.map(item => item[0]);
+            let values = topCategories.map(item => item[1]);
+
+            // Combine remaining items into "Other Categories"
+            if (rest.length > 0) {
+                let otherSum = rest.reduce((sum, item) => sum + item[1], 0);
+                labels.push('Other Categories');
+                values.push(otherSum);
+            }
+
             return {
-                labels: Object.keys(counts).slice(0, 7),
+                labels: labels,
                 datasets: [{
-                    data: Object.values(counts).slice(0, 7),
-                    backgroundColor: ['#111827', '#059669', '#0284c7', '#d97706', '#7c3aed', '#dc2626', '#4b5563']
+                    data: values,
+                    backgroundColor: [
+                        '#111827', '#1e293b', '#334155', '#475569', '#64748b',
+                        '#059669', '#10b981', '#0284c7', '#38bdf8', '#d97706',
+                        '#7c3aed', '#dc2626', '#9ca3af'
+                    ],
+                    borderWidth: 1,
+                    borderColor: '#ffffff'
                 }]
             };
         }
