@@ -525,16 +525,16 @@
             </div>
 
             <!-- TAB 2: BROWSE BY GENRE -->
-            <div id="browse-genre-tab" class="tab-content">
-                <div class="main-search-wrapper" style="margin-bottom: 16px;">
-                    <input type="text" id="genreSearchInput" class="main-search-input"
-                        placeholder="Search genres (e.g. History, Ἱστορία, Medical)..."
-                        oninput="filterGenreGrid(this.value)">
-                </div>
-                <div id="categoryGrid" class="genre-grid">
-                    <!-- Cards populated via script -->
-                </div>
-            </div>
+<div id="browse-genre-tab" class="tab-content">
+    <div class="main-search-wrapper" style="margin-bottom: 16px;">
+        <input type="text" id="genreSearchInput" class="main-search-input"
+            placeholder="Search genres (e.g. History, Ἱστορία, Medical)..."
+            oninput="filterGenreGrid(this.value)">
+    </div>
+    <div id="categoryGrid" class="genre-grid">
+        <!-- JavaScript will automatically populate the cards inside here -->
+    </div>
+</div>
 
             <!-- TAB 3: ABOUT -->
             <div id="about-tab" class="tab-content">
@@ -607,13 +607,15 @@
         btnElement.classList.add('active');
     }
 
-    // 5. SWAP SIDEBAR IMAGE
+    // // 5. SWAP SIDEBAR IMAGE
     const sidebarImg = document.getElementById('bookstore-img');
     if (sidebarImg) {
         if (tabId === 'about-tab') {
-            sidebarImg.src = 'about.jpg';      // Shows man carrying books
+            sidebarImg.src = 'about.jpg';          // Shows man carrying books
+        } else if (tabId === 'browse-genre-tab') {
+            sidebarImg.src = 'categories.jpg';    // Specific image ONLY for Browse by Genre tab
         } else {
-            sidebarImg.src = 'bookstore.jpg';  // Building photo for Homepage/Browse
+            sidebarImg.src = 'bookstore.jpg';      // Building photo for Homepage
         }
     }
 }
@@ -1086,6 +1088,75 @@
         function closeModal() {
             document.getElementById('imageModal').style.display = 'none';
         }
+    </script>
+    <!-- Your other scripts or page content can go here -->
+
+    <!-- PASTE THE JAVASCRIPT CODE RIGHT HERE -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      fetch('genres_taxonomy.json')
+        .then(response => response.json())
+        .then(data => {
+          const grid = document.getElementById('categoryGrid');
+          if (!grid) return;
+          grid.innerHTML = ''; // Clear placeholder
+
+          for (const [categoryName, catData] of Object.entries(data)) {
+            const details = document.createElement('details');
+            details.className = 'genre-group';
+            details.style.cssText = 'border: 1px solid #ccc; padding: 0.75rem 1rem; border-radius: 4px; background: #fff; margin-bottom: 10px;';
+
+            const summary = document.createElement('summary');
+            summary.style.cssText = 'font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center;';
+            summary.innerHTML = `<span>📜 ${categoryName}</span> <span style="font-size: 0.85rem; background: #f0f0f0; padding: 2px 8px; border-radius: 10px;">${catData.total_count}</span>`;
+            details.appendChild(summary);
+
+            const subGrid = document.createElement('div');
+            subGrid.className = 'subcat-container';
+            subGrid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #eee;';
+
+            catData.subcategories.forEach(sub => {
+              const subLink = document.createElement('a');
+              subLink.className = 'subcat-link';
+              subLink.href = `?genre=${encodeURIComponent(sub.name)}`;
+              subLink.style.cssText = 'text-decoration: none; color: #222; background: #f8f9fa; padding: 6px 10px; border-radius: 4px; border: 1px solid #e2e8f0; font-size: 0.9rem; display: flex; justify-content: space-between;';
+              subLink.innerHTML = `<span>${sub.name}</span> <span style="color: #666; font-weight: bold;">(${sub.count})</span>`;
+              subGrid.appendChild(subLink);
+            });
+
+            details.appendChild(subGrid);
+            grid.appendChild(details);
+          }
+        })
+        .catch(error => console.error('Error loading genres taxonomy:', error));
+    });
+
+    function filterGenreGrid(query) {
+      const searchTerm = query.toLowerCase().trim();
+      const groups = document.querySelectorAll('.genre-group');
+
+      groups.forEach(group => {
+        const links = group.querySelectorAll('.subcat-link');
+        let hasMatch = false;
+
+        links.forEach(link => {
+          const text = link.textContent.toLowerCase();
+          if (text.includes(searchTerm)) {
+            link.style.display = 'flex';
+            hasMatch = true;
+          } else {
+            link.style.display = 'none';
+          }
+        });
+
+        if (hasMatch || group.querySelector('summary').textContent.toLowerCase().includes(searchTerm)) {
+          group.style.display = 'block';
+          if (searchTerm.length > 0) group.setAttribute('open', 'true');
+        } else {
+          group.style.display = 'none';
+        }
+      });
+    }
     </script>
 </body>
 
