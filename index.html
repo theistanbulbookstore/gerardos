@@ -360,7 +360,7 @@
                 <!-- ALWAYS VISIBLE MAIN SEARCH BAR -->
                 <div class="main-search-wrapper">
                     <input type="text" id="customSearchInput" class="main-search-input"
-                        placeholder="Search catalog (e.g. Sophocles, Θεολογία, Primer)..."
+                        placeholder="Search catalog (e.g. Sophocles, Θεολογία, Primer, Odyssey)..."
                         oninput="onCustomSearch(this.value)">
                 </div>
 
@@ -535,15 +535,24 @@
 
             if (!rawData || rawData.length === 0) return;
 
-            // Helper to strip Roman numerals, Arabic numbers, Greek ordinal letters (e.g. Δ΄, ΚΓ΄), and prefixes
+            // Helper to format Greek text cleanly to Title Case (e.g., "ΧΗΜΕΙΑ" -> "Χημεία")
+            function toTitleCaseGreek(str) {
+                if (!str) return '';
+                return str.toLowerCase().replace(/(?:^|\s|\/|\()\S/g, function (a) {
+                    return a.toUpperCase();
+                });
+            }
+
+            // Completely strips ALL numbers (Roman, Arabic, Greek ordinal marks) and section prefixes
             function cleanLabel(str) {
                 if (!str) return '';
                 return str
-                    .replace(/^[IVXLCDMivxlcdm0-9A-Zα-ωΑ-Ω\.\s\-\–\—\(\)΄\']*?\.\s*/i, '') // Strips "IV. ", "12. ", "Δ΄ "
-                    .replace(/^[Α-Ωα-ω0-9]+[΄\']?\s+/i, '')                             // Strips standalone Greek prefixes like "ΚΓ΄ "
-                    .replace(/^[0-9]+\s*[\-\)]\s*/, '')                                 // Strips "1 - ", "2) "
-                    .replace(/[\-\–\—]/g, ' ')                                           // Standardize dashes
-                    .replace(/\s+/g, ' ')                                               // Trim extra spaces
+                    .replace(/[0-9]/g, '')                                             // Remove all Arabic digits (0-9)
+                    .replace(/^[IVXLCDMivxlcdm\.\s\-\–\—\(\)΄\']+/i, '')              // Remove leading Roman numerals & symbols
+                    .replace(/^[Α-Ωα-ω]{1,3}[΄\']?\s+/i, '')                           // Remove Greek section marks (Δ΄, ΚΓ΄)
+                    .replace(/^[A-Za-z]\.\s*/, '')                                     // Remove section letters (A.)
+                    .replace(/[\-\–\—\.\,\(\)]/g, ' ')                                 // Strip leftover punctuation
+                    .replace(/\s+/g, ' ')                                             // Collapse extra spaces
                     .trim();
             }
 
@@ -555,12 +564,14 @@
 
                 if (rawEn && typeof rawEn === 'string') {
                     const cleanEn = cleanLabel(rawEn);
-                    const cleanGr = cleanLabel(rawGr);
+                    let cleanGr = cleanLabel(rawGr);
 
-                    // Keep terms that are concise (between 3 and 25 characters, max 3 words)
+                    // Convert ALL-CAPS Greek to Title Case
+                    cleanGr = toTitleCaseGreek(cleanGr);
+
                     const wordCount = cleanEn.split(' ').length;
+                    // Target short, number-free terms (3-25 chars, max 3 words)
                     if (cleanEn.length >= 3 && cleanEn.length <= 25 && wordCount <= 3) {
-                        // Ensure Greek is not identical to English and is valid
                         const validGr = (cleanGr && cleanGr.toLowerCase() !== cleanEn.toLowerCase()) ? cleanGr : '';
                         keywordPairs.set(cleanEn, { en: cleanEn, gr: validGr });
                     }
@@ -572,7 +583,7 @@
             // Shuffle and pick 8 random concise pairs
             const selected = pool.sort(() => 0.5 - Math.random()).slice(0, 8);
 
-            // Render chips as: English (Greek) or clean English
+            // Render chips: English (Greek) or clean English
             selected.forEach(item => {
                 const searchText = item.gr || item.en;
                 const displayText = item.gr ? `${item.en} (${item.gr})` : item.en;
