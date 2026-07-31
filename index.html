@@ -107,6 +107,113 @@
             font-weight: 400;
         }
 
+        /* Tab Navigation Bar */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .nav-tab-btn {
+            background: transparent;
+            color: var(--text-color);
+            padding: 6px 14px;
+            border-radius: 2px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid var(--border-light);
+            font-family: var(--font-mono);
+        }
+
+        .nav-tab-btn:hover {
+            border-color: var(--border-dark);
+            color: var(--border-dark);
+        }
+
+        .nav-tab-btn.active {
+            background: var(--border-dark);
+            color: #ffffff;
+            border-color: var(--border-dark);
+        }
+
+        /* Tab Content Views */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Browse by Genre Grid */
+        .genre-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .genre-card {
+            border: 1px solid var(--border-light);
+            padding: 12px;
+            background: #ffffff;
+            border-radius: 2px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .genre-card:hover {
+            border-color: var(--border-dark);
+        }
+
+        .genre-card h4 {
+            margin: 0 0 4px 0;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .genre-card p {
+            margin: 0 0 10px 0;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .genre-card button {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-light);
+            padding: 4px 8px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            align-self: flex-start;
+        }
+
+        .genre-card button:hover {
+            border-color: var(--border-dark);
+            background: var(--border-dark);
+            color: #ffffff;
+        }
+
+        /* About Text Styles */
+        .about-text p {
+            line-height: 1.7;
+            color: var(--text-color);
+            margin-bottom: 16px;
+        }
+
+        .about-text h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 4px;
+        }
+
         /* Controls Panel & Dedicated Search Bar */
         .controls-panel {
             background: transparent;
@@ -353,64 +460,115 @@
             <header>
                 <h1 id="main-title">The Gerardos Catalogues</h1>
                 <p class="subtitle" id="main-subtitle">Digital Repository: A Late Ottoman Bookstore</p>
+                <div class="nav-tabs">
+                    <button class="nav-tab-btn active" onclick="switchTab('homepage-tab', this)">Homepage</button>
+                    <button class="nav-tab-btn" onclick="switchTab('browse-genre-tab', this)">Browse by Genre</button>
+                    <button class="nav-tab-btn" onclick="switchTab('about-tab', this)">About</button>
+                </div>
             </header>
 
             <!-- CONTROLS & SEARCH -->
-            <div class="controls-panel">
-                <!-- ALWAYS VISIBLE MAIN SEARCH BAR -->
-                <div class="main-search-wrapper">
-                    <input type="text" id="customSearchInput" class="main-search-input"
-                        placeholder="Search catalog (e.g. Sophocles, Θεολογία, Primer, Odyssey)..."
-                        oninput="onCustomSearch(this.value)">
+            <div id="homepage-tab" class="tab-content active">
+                <div class="controls-panel">
+                    <!-- ALWAYS VISIBLE MAIN SEARCH BAR -->
+                    <div class="main-search-wrapper">
+                        <input type="text" id="customSearchInput" class="main-search-input"
+                            placeholder="Search catalog (e.g. Sophocles, Θεολογία, Primer, Odyssey)..."
+                            oninput="onCustomSearch(this.value)">
+                    </div>
+
+                    <!-- AUTOMATIC KEYWORD PRESETS -->
+                    <div class="search-chips" id="chips-container">
+                        <span class="chip shuffle-btn" onclick="generateDynamicChips()">🎲 Suggest Keywords</span>
+                    </div>
+
+                    <div class="toggle-container">
+                        <input type="checkbox" id="toggle-bundling" onchange="applyBundlingToggle()">
+                        <label for="toggle-bundling">Group Exact Matches (ON: Combine 1895 &amp; 1904 duplicate titles |
+                            OFF: Show full raw catalog)</label>
+                    </div>
                 </div>
 
-                <!-- AUTOMATIC KEYWORD PRESETS -->
-                <div class="search-chips" id="chips-container">
-                    <span class="chip shuffle-btn" onclick="generateDynamicChips()">🎲 Suggest Keywords</span>
+                <!-- CHARTS SECTION -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3 style="margin: 0 0 8px 0; font-size: 0.85rem; font-weight: 500; color: var(--text-color);">Category Distribution</h3>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 style="margin: 0 0 8px 0; font-size: 0.85rem; font-weight: 500; color: var(--text-color);">Catalog Volume by Year</h3>
+                        <canvas id="yearChart"></canvas>
+                    </div>
                 </div>
 
-                <div class="toggle-container">
-                    <input type="checkbox" id="toggle-bundling" onchange="applyBundlingToggle()">
-                    <label for="toggle-bundling">Group Exact Matches (ON: Combine 1895 &amp; 1904 duplicate titles |
-                        OFF: Show full raw catalog)</label>
+                <span class="scroll-hint">↔ Scroll table horizontally to view full metadata</span>
+
+                <!-- DATA TABLE WRAPPER -->
+                <div class="table-scroll-wrapper">
+                    <table id="catalogTable" class="display nowrap">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>YEAR</th>
+                                <th>AUTHOR (GR)</th>
+                                <th>AUTHOR (EN)</th>
+                                <th>TITLE (GR)</th>
+                                <th>TITLE (EN)</th>
+                                <th>CATEGORY</th>
+                                <th>PRICE</th>
+                                <th>SCAN</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- CHARTS SECTION -->
-            <div class="charts-grid">
-                <div class="chart-card">
-                    <h3 style="margin: 0 0 8px 0; font-size: 0.85rem; font-weight: 500; color: var(--text-color);">Category Distribution</h3>
-                    <canvas id="categoryChart"></canvas>
+            <!-- TAB 2: BROWSE BY GENRE -->
+            <div id="browse-genre-tab" class="tab-content">
+                <div class="main-search-wrapper" style="margin-bottom: 16px;">
+                    <input type="text" id="genreSearchInput" class="main-search-input"
+                        placeholder="Search genres (e.g. History, Ἱστορία, Medical)..."
+                        oninput="filterGenreGrid(this.value)">
                 </div>
-                <div class="chart-card">
-                    <h3 style="margin: 0 0 8px 0; font-size: 0.85rem; font-weight: 500; color: var(--text-color);">Catalog Volume by Year</h3>
-                    <canvas id="yearChart"></canvas>
+                <div id="categoryGrid" class="genre-grid">
+                    <!-- Cards populated via script -->
                 </div>
             </div>
 
-            <span class="scroll-hint">↔ Scroll table horizontally to view full metadata</span>
+            <!-- TAB 3: ABOUT -->
+            <div id="about-tab" class="tab-content">
+                <div class="about-text">
+                    <!-- Image dedicated ONLY to the About tab -->
+                    <img src="about.jpg" alt="Gerardos Bookstore Archival Image" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 2px; border: 1px solid var(--border-light); margin-bottom: 20px;" onerror="this.style.display='none'">
 
-            <!-- DATA TABLE WRAPPER -->
-            <div class="table-scroll-wrapper">
-                <table id="catalogTable" class="display nowrap">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>YEAR</th>
-                            <th>AUTHOR (GR)</th>
-                            <th>AUTHOR (EN)</th>
-                            <th>TITLE (GR)</th>
-                            <th>TITLE (EN)</th>
-                            <th>CATEGORY</th>
-                            <th>PRICE</th>
-                            <th>SCAN</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+                    <p>
+                        Welcome to the digital repository of the <strong>Gerardos Brothers Bookstore</strong>, the largest bookstore in late Ottoman Istanbul. The Gerardos family immigrated to the Ottoman capital from the island of Folegandros in the late 19th century. They came to own, in conjunction with the Gerardos Brothers Bookstore, "the premier printing establishment in the Orient" as well as a number of Ottoman Greek newspapers by the early 20th century. 
+                        This project represents the first Ottoman book history database of its sort. It is motivated by the belief that the contents of the Gerardos catalogues offer invaluable insight into the social, cultural, and literary life of the Ottoman Greek community, and of the late Ottoman Empire more generally. 
+                    </p>
+
+                    <h3>About the Archive</h3>
+                    <p>
+                        The current repository is based on two extensive bookstore catalogues from the years 1895 and 1904. The index standardizes and translates 6,042 catalogue entries across these. 
+                        Each record captures original bibliographic metadata, including author attributions, original Greek titles, English translations, and price data. For each entry, a photograph of the original hard-copy catalog page is also available (under 'SCAN' on the far right of the metadate table).
+                        The repository and the database are both works in progress, and may contain errors and omissions.
+                    </p>
+
+                    <h3>Monetary Units & Price Standardisation</h3>
+                    <p>
+                        Prices in the catalogues are denominated in Ottoman <strong>Grosia (γρόσια)</strong> and <strong>Paras (παράδες)</strong>, 
+                        where <strong>1 Grosi = 40 Paras</strong>. For 1904 entries utilizing decimal formats (e.g., <code>1.20</code> for 1 grosi and 20 paras), entries are converted into standardized numerical float values for analytics.
+                    </p>
+
+                    <h3>Contact</h3>
+                    <p>
+                        Curated and maintained by <strong>Kutay Onaylı</strong>. Contact at kutay.onayli@magd.ox.ac.uk. Καλή αντάμωση.
+                    </p>
+                </div>
+            </div> <!-- Closes #about-tab -->
+
+        </div> <!-- Closes .main-content -->
+    </div> <!-- Closes .container -->
 
     <!-- LIGHTBOX MODAL -->
     <div id="imageModal" class="modal" onclick="closeModal()">
