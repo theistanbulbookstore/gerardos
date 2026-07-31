@@ -539,18 +539,21 @@
             <!-- TAB 3: ABOUT -->
             <div id="about-tab" class="tab-content">
                 <div class="about-text">
-                    <!-- Image dedicated ONLY to the About tab -->
-                    <img src="about.jpg" alt="Gerardos Bookstore Archival Image" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 2px; border: 1px solid var(--border-light); margin-bottom: 20px;" onerror="this.style.display='none'">
-
                     <p>
-                        Welcome to the digital repository of the <strong>Gerardos Brothers Bookstore</strong>, the largest bookstore in late Ottoman Istanbul. The Gerardos family immigrated to the Ottoman capital from the island of Folegandros in the late 19th century. They came to own, in conjunction with the Gerardos Brothers Bookstore, "the premier printing establishment in the Orient" as well as a number of Ottoman Greek newspapers by the early 20th century. 
+                        Welcome to the digital repository of the <strong>Gerardos Brothers Bookstore</strong>, the largest bookstore in late Ottoman Istanbul. The Gerardos family immigrated to the Ottoman capital from the island of Folegandros in the late 19th century. They came to own the Gerardos Brothers Bookstore as well as "the premier printing establishment in the Orient" and a number of Ottoman Greek newspapers by the early 20th century. 
+                    </p>
+                    <p>
                         This project represents the first Ottoman book history database of its sort. It is motivated by the belief that the contents of the Gerardos catalogues offer invaluable insight into the social, cultural, and literary life of the Ottoman Greek community, and of the late Ottoman Empire more generally. 
                     </p>
 
                     <h3>About the Archive</h3>
                     <p>
                         The current repository is based on two extensive bookstore catalogues from the years 1895 and 1904. The index standardizes and translates 6,042 catalogue entries across these. 
+                    </p>
+                    <p>
                         Each record captures original bibliographic metadata, including author attributions, original Greek titles, English translations, and price data. For each entry, a photograph of the original hard-copy catalog page is also available (under 'SCAN' on the far right of the metadate table).
+                    </p>
+                    <p>
                         The repository and the database are both works in progress, and may contain errors and omissions.
                     </p>
 
@@ -583,27 +586,37 @@
         let yearChartInstance = null;
 
         function switchTab(tabId, btnElement) {
-            // 1. Hide all tab content sections
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
+    // 1. Hide all tab content sections
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
 
-            // 2. Remove the active style from all nav buttons
-            document.querySelectorAll('.nav-tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+    // 2. Remove the active style from all nav buttons
+    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
 
-            // 3. Show the requested tab
-            const targetTab = document.getElementById(tabId);
-            if (targetTab) {
-                targetTab.classList.add('active');
-            }
+    // 3. Show the requested tab
+    const targetTab = document.getElementById(tabId);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
 
-            // 4. Highlight the active button
-            if (btnElement) {
-                btnElement.classList.add('active');
-            }
+    // 4. Highlight the active button
+    if (btnElement) {
+        btnElement.classList.add('active');
+    }
+
+    // 5. SWAP SIDEBAR IMAGE
+    const sidebarImg = document.getElementById('bookstore-img');
+    if (sidebarImg) {
+        if (tabId === 'about-tab') {
+            sidebarImg.src = 'about.jpg';      // Shows man carrying books
+        } else {
+            sidebarImg.src = 'bookstore.jpg';  // Building photo for Homepage/Browse
         }
+    }
+}
 
         const imageCandidates = ['bookstore.png', 'bookstore.jpeg', 'store.jpg', 'store.png', 'https://via.placeholder.com/380x500/ffffff/6b7280?text=BOOKSTORE+PHOTO'];
         let imgCandidateIdx = 0;
