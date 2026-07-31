@@ -440,9 +440,11 @@ $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
     let query = stripGreekAccents($('#customSearchInput').val());
     if (!query) return true;
     
-    // Concatenate all row data into one searchable string
-    let fullRowText = stripGreekAccents(data.join(' '));
-    return fullRowText.includes(query);
+    let rowObj = settings.aoData[dataIndex]._aData;
+    if (!rowObj) return true;
+
+    let rowValues = Object.values(rowObj).map(val => stripGreekAccents(val)).join(' ');
+    return rowValues.includes(query);
 });
 
 // Generate Keyword Suggestions Immediately On Page Load
@@ -508,7 +510,6 @@ function initDataTable(data) {
         scrollX: true
     });
 
-    // Re-apply search query to current dataset
     let curSearch = $('#customSearchInput').val();
     if (curSearch) {
         dataTable.draw();
@@ -565,9 +566,15 @@ function applyBundlingToggle() {
     Object.keys(grouped).forEach(key => {
         let group = grouped[key];
         let primary = Object.assign({}, group[0]);
-        if (group.length > 1) {
-            primary.catalog_year = '1895 & 1904 [Bundled]';
+        
+        let years = [...new Set(group.map(g => g.catalog_year))].sort();
+        
+        if (years.length > 1) {
+            primary.catalog_year = years.join(' & ') + ' [Bundled]';
+        } else if (group.length > 1) {
+            primary.catalog_year = years[0] + ' (' + group.length + ' entries)';
         }
+        
         bundledRows.push(primary);
     });
 
