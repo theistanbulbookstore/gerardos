@@ -1176,68 +1176,67 @@ function generateDynamicChips() {
 fetch('genres_taxonomy.json')
     .then(response => response.json())
     .then(data => {
-      const grid = document.getElementById('categoryGrid');
-      const chipsContainer = document.getElementById('topCategoryChips');
-      if (!grid) return;
+        const grid = document.getElementById('categoryGrid');
+        const chipsContainer = document.getElementById('topCategoryChips');
+        if (!grid) return;
 
-      grid.innerHTML = '';
-      if (chipsContainer) chipsContainer.innerHTML = '';
+        grid.innerHTML = '';
+        if (chipsContainer) chipsContainer.innerHTML = '';
 
-      for (const [rawCategoryName, catData] of Object.entries(data)) {
-        const categoryName = cleanGenreName(rawCategoryName);
-        const groupId = 'genre-group-' + categoryName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        for (const [rawCategoryName, catData] of Object.entries(data)) {
+            const categoryName = cleanGenreName(rawCategoryName);
+            const groupId = 'genre-group-' + categoryName.toLowerCase().replace(/[^a-z0-9]/g, '-');
 
-        // --- 1. RENDER TOP QUICK-ACCESS CHIP ---
-        if (chipsContainer) {
-          const chip = document.createElement('span');
-          chip.className = 'chip';
-          chip.innerHTML = `${categoryName} (${catData.total_count})`;
-          chip.onclick = function() {
-            const targetGroup = document.getElementById(groupId);
-            if (targetGroup) {
-              targetGroup.setAttribute('open', 'true');
-              targetGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Quick-Access Chip
+            if (chipsContainer) {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.innerHTML = `${categoryName} (${catData.total_count})`;
+                chip.onclick = function () {
+                    const targetGroup = document.getElementById(groupId);
+                    if (targetGroup) {
+                        targetGroup.setAttribute('open', 'true');
+                        targetGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                };
+                chipsContainer.appendChild(chip);
             }
-          };
-          chipsContainer.appendChild(chip);
+
+            // Accordion Group
+            const details = document.createElement('details');
+            details.className = 'genre-group';
+            details.id = groupId;
+
+            const summary = document.createElement('summary');
+            summary.className = 'genre-summary';
+            summary.innerHTML = `<span>▶ ${categoryName}</span> <span class="genre-badge">${catData.total_count} items</span>`;
+            details.appendChild(summary);
+
+            const subGrid = document.createElement('div');
+            subGrid.className = 'subcat-container';
+
+            catData.subcategories.forEach(sub => {
+                const subDisplayName = cleanGenreName(sub.name);
+
+                let rawSearchTerm = sub.name;
+                if (sub.name.toLowerCase().includes('general / uncategorized')) {
+                    rawSearchTerm = '__UNCATEGORIZED__:' + rawCategoryName;
+                }
+
+                const subLink = document.createElement('a');
+                subLink.className = 'subcat-link';
+                subLink.onclick = function () {
+                    const homepageBtn = document.querySelectorAll('.nav-tab-btn')[0];
+                    switchTab('homepage-tab', homepageBtn);
+                    applySearch(rawSearchTerm);
+                };
+                subLink.innerHTML = `<span>${subDisplayName}</span> <span class="subcat-count">(${sub.count})</span>`;
+                subGrid.appendChild(subLink);
+            });
+
+            details.appendChild(subGrid);
+            grid.appendChild(details);
         }
-
-        // --- 2. RENDER ACCORDION ITEM ---
-        const details = document.createElement('details');
-        details.className = 'genre-group';
-        details.id = groupId;
-
-        const summary = document.createElement('summary');
-        summary.className = 'genre-summary';
-        summary.innerHTML = `<span>▶ ${categoryName}</span> <span class="genre-badge">${catData.total_count} items</span>`;
-        details.appendChild(summary);
-
-        const subGrid = document.createElement('div');
-        subGrid.className = 'subcat-container';
-
-        catData.subcategories.forEach(sub => {
-          const subDisplayName = cleanGenreName(sub.name);
-
-          // Handle uncategorized items vs regular subcategory terms
-          let rawSearchTerm = sub.name;
-          if (sub.name.toLowerCase().includes('general / uncategorized')) {
-            rawSearchTerm = '__UNCATEGORIZED__:' + rawCategoryName;
-          }
-
-          const subLink = document.createElement('a');
-          subLink.className = 'subcat-link';
-          subLink.onclick = function() {
-            const homepageBtn = document.querySelectorAll('.nav-tab-btn')[0];
-            switchTab('homepage-tab', homepageBtn);
-            applySearch(rawSearchTerm);
-          };
-          subLink.innerHTML = `<span>${subDisplayName}</span> <span class="subcat-count">(${sub.count})</span>`;
-          subGrid.appendChild(subLink);
-        });
-
-        details.appendChild(subGrid);
-        grid.appendChild(details);
-      }
     })
     .catch(error => console.error('Error loading genres taxonomy:', error));
 
